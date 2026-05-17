@@ -3,8 +3,8 @@
   VT AI / Virtual Teacher.AI - AI Learning Terminal for Indonesian SMA IPS students
   Setup:
   1. Open this index.html in Chrome, Edge, or Firefox.
-  2. Open Settings, paste a Groq and/or OpenRouter API key, then save.
-  3. All data is stored only in localStorage. No backend, cookies, or build step.
+  2. For GitHub Pages shared access, fill EMBEDDED_GROQ_KEYS / EMBEDDED_OR_KEYS in this file before deploy.
+  3. Users may still add personal keys in Settings. All chat data is stored only in localStorage.
 -->
 <html lang="id">
 <head>
@@ -45,6 +45,7 @@
     }
     * { box-sizing: border-box; }
     html, body, #root { height: 100%; margin: 0; }
+    #root { width: 100%; height: 100%; transform: none; transform-origin: initial; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
       background:
@@ -187,6 +188,176 @@
       .main { width: 100vw; flex-basis: 100vw; }
       .user-bubble { max-width: 92%; }
     }
+    /* VT AI RESPONSIVE PATCH: desktop follows viewport scale, mobile gets app-like layout */
+    .brand-logo {
+      display: inline-grid;
+      place-items: center;
+      overflow: hidden;
+      background: radial-gradient(circle at 35% 20%, rgba(188,126,255,.38), rgba(108,99,255,.12) 44%, rgba(0,0,0,.18));
+      border: 1px solid rgba(167,139,250,.28);
+      box-shadow: 0 18px 60px rgba(108,99,255,.22), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .brand-logo img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.08); }
+    .sidebar-brand-logo img { transform: scale(1.18); }
+    .desktop-welcome-logo img { transform: scale(1.10); }
+    .mobile-topbar, .mobile-promo { display: none; }
+    .mobile-shell { min-height: 100%; }
+    .welcome-subject-pills { display: none !important; }
+    .input-area { flex-shrink: 0; }
+    .token-budget { white-space: nowrap; }
+    @media (min-width: 801px) {
+      .main { width: auto; max-width: none; }
+      .messages-pane { min-width: 0; }
+      .input-area .composer { max-width: min(1024px, calc(100vw - 340px)); }
+    }
+    @media (max-width: 800px) {
+      body { background: #0d0d12; }
+      .mobile-shell {
+        display: block !important;
+        padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+        background:
+          radial-gradient(circle at 50% 8%, rgba(108,99,255,.18), transparent 28%),
+          linear-gradient(180deg, #16161b 0%, #101014 58%, #0a0a0b 100%);
+      }
+      .mobile-shell .main {
+        width: 100%;
+        height: 100%;
+        flex-basis: auto;
+        background: transparent;
+      }
+      .app-header { display: none !important; }
+      .mobile-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .mobile-round-btn {
+        width: 68px;
+        height: 68px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        background: rgba(255,255,255,.035);
+        border: 1px solid rgba(255,255,255,.08);
+        color: var(--text-primary);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+      }
+      .mobile-round-btn.logo-btn { padding: 9px; }
+      .mobile-promo {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 64px;
+        padding: 0 22px;
+        border-radius: 22px;
+        border: 1px solid rgba(167,139,250,.18);
+        background: rgba(255,255,255,.025);
+        color: var(--text-primary);
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .mobile-promo button { color: var(--accent-hover); font-weight: 800; }
+      .messages-pane {
+        margin: 0 -14px;
+        padding: 0 14px;
+      }
+      .welcome-mobile {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        min-height: 100%;
+        padding: 21vh 0 18vh;
+      }
+      .welcome-mobile .desktop-welcome-logo {
+        width: 112px;
+        height: 112px;
+        border-radius: 38px;
+        background: transparent;
+        box-shadow: 0 24px 80px rgba(108,99,255,.24);
+      }
+      .welcome-mobile h1 {
+        margin-top: 22px;
+        font-size: clamp(30px, 8.2vw, 38px);
+        line-height: 1.12;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-weight: 500;
+        color: #eee8ff;
+        text-wrap: balance;
+      }
+      .welcome-mobile p,
+      .welcome-mobile .setup-reminder {
+        display: none;
+      }
+      .messages-list { padding: 20px 2px 28px; }
+      .input-area {
+        padding: 0 !important;
+        border-top: 0 !important;
+        background: transparent !important;
+      }
+      .file-row { padding: 0 4px; }
+      .composer {
+        border-radius: 30px;
+        padding: 13px;
+        border-color: rgba(167,139,250,.22);
+        background: rgba(20,20,22,.92);
+        box-shadow: 0 26px 80px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.05);
+      }
+      .composer textarea {
+        min-height: 64px;
+        max-height: 150px;
+        padding: 8px 10px 14px;
+        font-size: 20px;
+        line-height: 1.45;
+      }
+      .composer-footer {
+        border-top: 0 !important;
+        padding-top: 8px;
+        flex-wrap: nowrap !important;
+        gap: 10px !important;
+      }
+      .attach-btn {
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 999px !important;
+        background: rgba(0,0,0,.22);
+        border-color: transparent !important;
+      }
+      .mobile-subject-wrap { display: none; }
+      .mobile-model-wrap {
+        display: flex;
+        min-width: 0;
+        flex: 1;
+      }
+      .mobile-model-wrap > div { min-width: 0; flex: 1; }
+      .mobile-model-wrap button {
+        min-width: 0 !important;
+        height: 52px;
+        border-radius: 999px;
+        padding-inline: 17px;
+        background: rgba(0,0,0,.26) !important;
+        border-color: transparent !important;
+      }
+      .mobile-model-wrap .custom-menu {
+        left: 0;
+        right: auto;
+        width: min(88vw, 360px);
+      }
+      .token-budget, .composer-hint, .disclaimer { display: none !important; }
+      .send-btn, .stop-btn {
+        width: 52px;
+        height: 52px;
+        border-radius: 999px !important;
+        padding: 0 !important;
+        display: grid;
+        place-items: center;
+        margin-left: 0 !important;
+        font-size: 0;
+      }
+      .send-btn .send-label, .stop-btn .send-label { display: none; }
+      .send-icon { font-size: 20px; }
+      .toast { max-width: calc(100vw - 24px); }
+    }
   </style>
 </head>
 <body>
@@ -213,14 +384,108 @@ const STORAGE = {
 };
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+/* KEY POOL MODULE
+   Isi slot di bawah sebelum deploy ke GitHub Pages jika ingin semua pengunjung langsung bisa memakai AI.
+   PERINGATAN: GitHub Pages adalah static hosting. Key yang ditaruh di sini bisa dilihat siapa pun lewat DevTools/source.
+   Untuk produksi sungguhan, gunakan backend/proxy agar key tidak terekspos. */
+const EMBEDDED_GROQ_KEYS = [
+  "GROQ_KEY_1_HERE",
+  "GROQ_KEY_2_HERE",
+  "GROQ_KEY_3_HERE",
+  "GROQ_KEY_4_HERE",
+  "GROQ_KEY_5_HERE",
+].filter(k => k && !k.includes("_HERE"));
+const EMBEDDED_OR_KEYS = [
+  "OR_KEY_1_HERE",
+  "OR_KEY_2_HERE",
+  "OR_KEY_3_HERE",
+  "OR_KEY_4_HERE",
+  "OR_KEY_5_HERE",
+].filter(k => k && !k.includes("_HERE"));
+class KeyPool {
+  constructor(type) {
+    this.type = type;
+    this.pointer = 0;
+    this.pool = [];
+    this._init();
+  }
+  _storageKey() { return this.type === "groq" ? STORAGE.groq : STORAGE.openrouter; }
+  _embeddedKeys() { return this.type === "groq" ? EMBEDDED_GROQ_KEYS : EMBEDDED_OR_KEYS; }
+  _init() {
+    const stored = (localStorage.getItem(this._storageKey()) || "").split(/[\n,]+/).map(k => k.trim()).filter(Boolean);
+    const previous = new Map(this.pool.map(e => [e.key, e]));
+    const keys = [...new Set([...this._embeddedKeys(), ...stored])];
+    this.pool = keys.map(key => ({
+      key,
+      hits: previous.get(key)?.hits || 0,
+      errors: previous.get(key)?.errors || 0,
+      lastError: previous.get(key)?.lastError || null,
+      cooldownUntil: previous.get(key)?.cooldownUntil || 0,
+      status: previous.get(key)?.status || "active",
+    }));
+  }
+  _refresh() {
+    const keep = new Map(this.pool.map(e => [e.key, e]));
+    this._init();
+    this.pool = this.pool.map(e => ({...e, ...(keep.get(e.key) || {})}));
+  }
+  _persistUserKeys() {
+    const embedded = new Set(this._embeddedKeys());
+    const userKeys = this.pool.filter(e => !embedded.has(e.key)).map(e => e.key).join("\n");
+    localStorage.setItem(this._storageKey(), userKeys);
+  }
+  next() {
+    this._refresh();
+    const now = Date.now();
+    this.pool.forEach(e => {
+      if (e.status === "cooling" && now > e.cooldownUntil) e.status = "active";
+    });
+    const active = this.pool.filter(e => e.status === "active");
+    if (!active.length) return null;
+    const entry = active[this.pointer % active.length];
+    this.pointer = (this.pointer + 1) % Math.max(active.length, 1);
+    return entry;
+  }
+  markSuccess(key) { const e = this.pool.find(x => x.key === key); if (e) { e.hits++; e.status = "active"; e.lastError = null; } }
+  markRateLimit(key) { const e = this.pool.find(x => x.key === key); if (e) { e.status = "cooling"; e.cooldownUntil = Date.now() + 60000; e.errors++; e.lastError = "rate_limit"; } }
+  markDead(key) { const e = this.pool.find(x => x.key === key); if (e) { e.status = "dead"; e.errors++; e.lastError = "invalid_key"; } }
+  addKey(key) {
+    key = String(key || "").trim();
+    if (!key || this.pool.some(e => e.key === key)) return false;
+    this.pool.push({key, hits:0, errors:0, lastError:null, cooldownUntil:0, status:"active"});
+    this._persistUserKeys();
+    return true;
+  }
+  removeKey(key) {
+    this.pool = this.pool.filter(e => e.key !== key);
+    this._persistUserKeys();
+  }
+  get count() { this._refresh(); return this.pool.length; }
+  get summary() {
+    this._refresh();
+    return {
+      total: this.pool.length,
+      active: this.pool.filter(e => e.status === "active").length,
+      cooling: this.pool.filter(e => e.status === "cooling").length,
+      dead: this.pool.filter(e => e.status === "dead").length,
+    };
+  }
+  get entries() { this._refresh(); return this.pool; }
+}
+const groqPool = new KeyPool("groq");
+const orPool = new KeyPool("openrouter");
 const FAST_MODELS = [
-  {name:"⚡ VT.Fast 1.0 (Recommended)", id:"llama-3.3-70b-versatile", badges:["Fast"]},
+  {name:"⚡ VT.Fast 1.0", id:"llama-3.3-70b-versatile", badges:["Fast"]},
   {name:"🏃 VT.Instant 1.0", id:"llama-3.1-8b-instant", badges:["Instant"]},
   {name:"👁️ VT.Vision 1.0", id:"meta-llama/llama-4-scout-17b-16e-instruct", badges:["Image"], vision:true}
 ];
 const THINKING_MODELS = [
-  {name:"🧭 VT.Pro 1.0 (Recommended)", id:"openrouter/free", badges:["Pro"]},
-  {name:"🧬 VT.Thinking 1.0", id:"arcee-ai/trinity-large-thinking:free", badges:["Reasoning"], thinks:true},
+  {name:"🧭 VT.Pro 1.0", id:"openrouter/free", badges:["Router"]},
+  {name:"⚡ DeepSeek V4 Flash", id:"deepseek/deepseek-v4-flash:free", badges:["Free"]},
+  {name:"🧬 Trinity Thinking", id:"arcee-ai/trinity-large-thinking:free", badges:["Reasoning"], thinks:true},
+  {name:"🧠 Hermes 405B", id:"nousresearch/hermes-3-llama-3.1-405b:free", badges:["Free"]},
+  {name:"💎 Gemma 4 26B", id:"google/gemma-4-26b-a4b-it:free", badges:["Free"]},
 ];
 const SUBJECTS = ["Matematika","Ekonomi","Sosiologi","Geografi","Sejarah Peminatan","Sejarah Indonesia","Bahasa Indonesia","Bahasa Inggris","PPKn","Informatika","Pendidikan Agama","Seni Budaya","PJOK"];
 const DEFAULT_MEMORY = { studentName:"", grade:"", school:"", sessionCount:0, lastSeen:"", strongSubjects:[], weakSubjects:[], learningStyle:"", importantNotes:[], vocabularyPreference:"" };
@@ -370,7 +635,7 @@ function normalizeProjects(raw) {
 function apiHeaders(type, key) {
   const headers = {"Authorization":`Bearer ${key}`, "Content-Type":"application/json"};
   if (type === "thinking") {
-    headers["HTTP-Referer"] = "http://localhost";
+    headers["HTTP-Referer"] = location.origin || "https://github.io";
     headers["X-Title"] = "VT AI";
   }
   return headers;
@@ -474,7 +739,10 @@ const MODEL_CONTEXT = {
   "llama-3.1-8b-instant": 8192,
   "meta-llama/llama-4-scout-17b-16e-instruct": 8192,
   "openrouter/free": 8192,
+  "deepseek/deepseek-v4-flash:free": 65536,
   "arcee-ai/trinity-large-thinking:free": 32768,
+  "nousresearch/hermes-3-llama-3.1-405b:free": 32768,
+  "google/gemma-4-26b-a4b-it:free": 32768,
 };
 const SYSTEM_RESERVE = 3200;
 const RESPONSE_RESERVE = 2048;
@@ -548,7 +816,7 @@ function Sidebar({open, setOpen, chats, projects, activeId, onNew, onOpen, onDel
   const recent = [...chats].sort((a,b) => new Date(b.updatedAt)-new Date(a.updatedAt)).slice(0,8);
   return <aside className={`sidebar h-full flex flex-col scrollbar ${open ? "open" : ""}`}>
     <div className="p-3 flex items-center justify-between border-b" style={{borderColor:"var(--border)"}}>
-      <div className="flex items-center gap-2 font-bold text-base"><div className="w-8 h-8 rounded-lg grid place-items-center btn-primary">VT</div> VT AI</div>
+      <div className="flex items-center gap-2 font-bold text-base"><div className="brand-logo sidebar-brand-logo w-8 h-8 rounded-lg"><img src="vt-ai-logo.png" alt="VT AI" /></div> VT AI</div>
       <button className="w-8 h-8 rounded-lg hoverable" onClick={toggleTheme}><Icon name={theme === "light" ? "moon" : "sun"} /></button>
     </div>
     <div className="p-3 border-b" style={{borderColor:"var(--border)"}}>
@@ -591,13 +859,13 @@ function SkeletonList() {
   return <div className="space-y-2 p-2"><div className="h-9 rounded-lg skeleton"></div><div className="h-9 rounded-lg skeleton w-10/12"></div><div className="h-9 rounded-lg skeleton w-8/12"></div></div>;
 }
 function Welcome({onSubject, hasKey}) {
-  return <div className="h-full grid place-items-center px-5">
+  return <div className="welcome-mobile h-full grid place-items-center px-5">
     <div className="text-center w-full max-w-5xl min-w-0">
-      <div className="mx-auto w-20 h-20 rounded-3xl grid place-items-center btn-primary text-3xl font-black shadow-2xl">VT</div>
+      <div className="brand-logo desktop-welcome-logo mx-auto w-24 h-24 rounded-[28px]"><img src="vt-ai-logo.png" alt="VT AI" /></div>
       <h1 className="text-3xl md:text-5xl font-bold mt-6 leading-tight px-2">Selamat datang di VT AI</h1>
       <p className="text-secondary mt-3 text-lg">Virtual Teacher.AI untuk pelajar Indonesia</p>
-      {!hasKey && <p className="mt-4 text-sm text-amber-500">API Key belum diatur. Buka Settings untuk mengaktifkan jawaban AI.</p>}
-      <div className="mt-8 flex flex-wrap justify-center gap-2 w-full overflow-hidden">
+      {!hasKey && <p className="setup-reminder mt-4 text-sm text-amber-500">API Key belum diatur. Isi embedded key pool di source atau buka Settings untuk key manual.</p>}
+      <div className="welcome-subject-pills mt-8 flex flex-wrap justify-center gap-2 w-full overflow-hidden">
         {SUBJECTS.slice(0,8).map((s, i) => <button key={s} onClick={() => onSubject(s)} className="elevated border rounded-full px-4 py-2 hoverable" style={{animation:`pillEnter 0.36s cubic-bezier(0.34,1.56,0.64,1) ${i * 55}ms both`}}>{s}</button>)}
       </div>
     </div>
@@ -706,6 +974,22 @@ function ModelDropdown({settings, setSettings, direction="up", className=""}) {
     setSettings({...settings, modelType:type, [type==="fast" ? "fastModel" : "thinkingModel"]:id});
   }} />;
 }
+/* KEY POOL MODULE */
+function maskKey(key) {
+  if (!key) return "";
+  return key.slice(0, 8) + "••••••••" + key.slice(-4);
+}
+function KeyStatusPill() {
+  const g = groqPool.summary;
+  const o = orPool.summary;
+  const total = g.total + o.total;
+  const active = g.active + o.active;
+  const color = active === 0 ? "var(--danger)" : active < total ? "var(--warning)" : "var(--success)";
+  return <div className="hidden md:flex items-center gap-1 text-[11px] elevated border rounded-full px-2 py-1" title={`Groq: ${g.active}/${g.total} · OpenRouter: ${o.active}/${o.total}`}>
+    <span style={{color}}>●</span>
+    <span className="text-secondary">{active}/{total} keys</span>
+  </div>;
+}
 function TokenBudgetBar({ settings, chat }) {
   const modelId = currentModelId(settings);
   const total = MODEL_CONTEXT[modelId] || 8192;
@@ -713,7 +997,7 @@ function TokenBudgetBar({ settings, chat }) {
   const used = estimatedTokens + SYSTEM_RESERVE;
   const pct = Math.min(100, Math.round((used / total) * 100));
   const color = pct > 80 ? "var(--danger)" : pct > 55 ? "var(--warning)" : "var(--success)";
-  return <div className="flex items-center gap-2 text-[11px] text-muted px-2">
+  return <div className="token-budget flex items-center gap-2 text-[11px] text-muted px-2">
     <div className="w-20 h-1.5 rounded-full" style={{background:"var(--border)"}}>
       <div className="h-full rounded-full transition-all" style={{width:`${pct}%`, background:color}} />
     </div>
@@ -722,8 +1006,8 @@ function TokenBudgetBar({ settings, chat }) {
 }
 function InputBar({value, setValue, onSend, loading, files, setFiles, onFiles, subject, setSubject, settings, setSettings, activeChat, abortRef}) {
   const fileRef = useRef(null);
-  return <div className="border-t p-4" style={{borderColor:"var(--border)", background:"linear-gradient(180deg, transparent, rgba(0,0,0,.20))"}}>
-    {files.length > 0 && <div className="max-w-5xl mx-auto mb-2 flex gap-2 flex-wrap">
+  return <div className="input-area border-t p-4" style={{borderColor:"var(--border)", background:"linear-gradient(180deg, transparent, rgba(0,0,0,.20))"}}>
+    {files.length > 0 && <div className="file-row max-w-5xl mx-auto mb-2 flex gap-2 flex-wrap">
       {files.map((f,i) => <div key={f.name+i} className="relative group chip-enter elevated border rounded-full px-3 py-1.5 text-xs flex items-center gap-2">
         <span>{f.type==="image"?"🖼️":"📄"} {f.name}</span>
         {f.type==="image" && <img src={f.content} className="hidden group-hover:block absolute bottom-9 left-0 w-20 h-20 object-cover rounded-lg border z-20" />}
@@ -732,50 +1016,69 @@ function InputBar({value, setValue, onSend, loading, files, setFiles, onFiles, s
     </div>}
     <div className="max-w-5xl w-full mx-auto composer rounded-3xl p-3">
       <input ref={fileRef} type="file" className="hidden" multiple accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx,.xlsm,.py,.js,.ts,.html,.css,.cpp,.c,.h,.java,.php,.zip,.txt,.md,.csv,.json" onChange={e => onFiles([...e.target.files])} />
-      <textarea value={value} onChange={e => setValue(e.target.value)} onKeyDown={e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); onSend(); } }} placeholder="Tanyakan materi, minta latihan soal, atau unggah file untuk dianalisis..." rows={2} className="w-full bg-transparent outline-none resize-none overflow-hidden max-h-44 px-2 pt-1 pb-3 text-[15px] leading-7 placeholder:text-muted" />
-      <div className="flex items-center gap-2 pt-2 border-t flex-wrap" style={{borderColor:"var(--border)"}}>
-        <button className="h-11 w-11 rounded-xl hoverable border shrink-0" style={{borderColor:"var(--border)"}} onClick={() => fileRef.current.click()} title="Attach file"><Icon name="attach" /></button>
-        <SubjectDropdown subject={subject} setSubject={setSubject} className="w-full sm:w-[210px]" />
-        <ModelDropdown settings={settings} setSettings={setSettings} className="w-full lg:w-[330px] sm:flex-1 lg:flex-none" />
-        <div className="flex-1 hidden 2xl:block text-xs text-muted px-2">Enter untuk kirim · Shift+Enter baris baru</div>
+      <textarea value={value} onChange={e => setValue(e.target.value)} onKeyDown={e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); onSend(); } }} placeholder="Tanyakan VT AI..." rows={2} className="w-full bg-transparent outline-none resize-none overflow-hidden max-h-44 px-2 pt-1 pb-3 text-[15px] leading-7 placeholder:text-muted" />
+      <div className="composer-footer flex items-center gap-2 pt-2 border-t flex-wrap" style={{borderColor:"var(--border)"}}>
+        <button className="attach-btn h-11 w-11 rounded-xl hoverable border shrink-0" style={{borderColor:"var(--border)"}} onClick={() => fileRef.current.click()} title="Attach file"><Icon name="attach" /></button>
+        <div className="mobile-subject-wrap w-full sm:w-[210px]"><SubjectDropdown subject={subject} setSubject={setSubject} /></div>
+        <div className="mobile-model-wrap w-full lg:w-[330px] sm:flex-1 lg:flex-none"><ModelDropdown settings={settings} setSettings={setSettings} /></div>
+        <div className="composer-hint flex-1 hidden 2xl:block text-xs text-muted px-2">Enter untuk kirim · Shift+Enter baris baru</div>
         <TokenBudgetBar settings={settings} chat={activeChat} />
         {loading
-          ? <button onClick={() => abortRef.current?.abort()} className="rounded-xl h-11 px-5 font-semibold bg-red-500 hover:bg-red-600 text-white ml-auto shrink-0">⏹ Stop</button>
-          : <button disabled={!value.trim() && !files.length} onClick={onSend} className="btn-primary ripple-btn disabled:opacity-40 rounded-xl h-11 px-5 font-semibold ml-auto shrink-0"><Icon name="send" /> Send</button>}
+          ? <button onClick={() => abortRef.current?.abort()} className="stop-btn rounded-xl h-11 px-5 font-semibold bg-red-500 hover:bg-red-600 text-white ml-auto shrink-0"><span className="send-icon">⏹</span><span className="send-label ml-1">Stop</span></button>
+          : <button disabled={!value.trim() && !files.length} onClick={onSend} className="send-btn btn-primary ripple-btn disabled:opacity-40 rounded-xl h-11 px-5 font-semibold ml-auto shrink-0"><span className="send-icon"><Icon name="send" /></span><span className="send-label ml-1">Send</span></button>}
       </div>
     </div>
   </div>;
 }
-function SettingsModal({open, onClose, settings, setSettings, memory, setMemory, toast}) {
-  const [groq, setGroq] = useState(localStorage.getItem(STORAGE.groq) || "");
-  const [orKey, setOrKey] = useState(localStorage.getItem(STORAGE.openrouter) || "");
+function SettingsModal({open, onClose, settings, setSettings, memory, setMemory, toast, onPoolChange}) {
   const [wipeText, setWipeText] = useState("");
-  useEffect(() => { if(open){ setGroq(localStorage.getItem(STORAGE.groq)||""); setOrKey(localStorage.getItem(STORAGE.openrouter)||""); } }, [open]);
+  const [, forceTick] = useState(0);
+  const forceUpdate = () => { forceTick(x => x + 1); onPoolChange?.(); };
   if (!open) return null;
-  const saveKeys = () => { localStorage.setItem(STORAGE.groq, groq.trim()); localStorage.setItem(STORAGE.openrouter, orKey.trim()); toast("success","Settings tersimpan."); };
-  const testKey = async (type) => {
-    const key = type === "fast" ? groq : orKey;
-    if (!key) return toast("warn","API Key belum diisi.");
-    try {
-      const model = type === "fast" ? settings.fastModel : settings.thinkingModel;
-      const headers = apiHeaders(type, key);
-      const r = await fetch(type === "fast" ? GROQ_URL : OPENROUTER_URL, {method:"POST", headers, body:JSON.stringify({model, messages:[{role:"user", content:"Jawab satu kata: valid"}], max_tokens:16})});
-      if (r.ok) {
-        if (type === "fast") localStorage.setItem(STORAGE.groq, groq.trim());
-        else localStorage.setItem(STORAGE.openrouter, orKey.trim());
-        toast("success",`✅ ${type === "fast" ? "Groq" : "OpenRouter"} valid (${model})`);
-      } else {
-        const detail = await readApiError(r);
-        toast("error",`❌ ${r.status} ${detail || "Invalid"}`);
-      }
-    } catch(e) { toast("error",`❌ Koneksi gagal: ${e.message || "CORS/network error"}`); }
-  };
+  const saveKeys = () => { toast("success","Settings tersimpan."); };
   return <div className="fixed inset-0 z-[70] bg-black/60 grid place-items-center p-4" onMouseDown={onClose}>
     <div className="modal-enter surface border rounded-2xl w-[600px] max-w-full max-h-[92vh] overflow-y-auto scrollbar p-5" onMouseDown={e => e.stopPropagation()}>
       <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold">Settings</h2><button onClick={onClose} className="text-2xl text-muted">×</button></div>
-      <Section title="🔑 API Keys">
-        <Label label="🚀 Groq API Key (Fast Models)"><div className="flex gap-2"><Input type="password" value={groq} onChange={setGroq}/><button onClick={() => testKey("fast")} className="elevated border rounded-lg px-3">Test</button></div></Label>
-        <Label label="🧠 OpenRouter API Key (Thinking Models)"><div className="flex gap-2"><Input type="password" value={orKey} onChange={setOrKey}/><button onClick={() => testKey("thinking")} className="elevated border rounded-lg px-3">Test</button></div></Label>
+      <Section title="🔑 API Keys — Key Pool">
+        {[
+          { label: "Groq (Fast)", pool: groqPool },
+          { label: "OpenRouter (Thinking)", pool: orPool },
+        ].map(({label, pool}) => {
+          const s = pool.summary;
+          return <div key={label} className="elevated border rounded-xl p-3 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-semibold text-sm">{label}</span>
+              <div className="flex gap-1.5 text-[11px] flex-wrap justify-end">
+                <span className="rounded-full px-2 py-0.5" style={{background:"rgba(34,197,94,.15)", color:"var(--success)"}}>✅ {s.active} aktif</span>
+                {s.cooling > 0 && <span className="rounded-full px-2 py-0.5" style={{background:"rgba(245,158,11,.15)", color:"var(--warning)"}}>⏳ {s.cooling} cooldown</span>}
+                {s.dead > 0 && <span className="rounded-full px-2 py-0.5" style={{background:"rgba(239,68,68,.15)", color:"var(--danger)"}}>❌ {s.dead} mati</span>}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              {pool.entries.length ? pool.entries.map((e, i) => {
+                const embedded = pool._embeddedKeys().includes(e.key);
+                const statusColor = {active:"var(--success)", cooling:"var(--warning)", dead:"var(--danger)"}[e.status];
+                return <div key={e.key+i} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs" style={{background:"var(--bg-hover)"}}>
+                  <span style={{color:statusColor}}>{e.status === "active" ? "●" : e.status === "cooling" ? "◑" : "○"}</span>
+                  <span className="mono flex-1 text-secondary truncate">{maskKey(e.key)}</span>
+                  {embedded && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{background:"var(--accent-soft)", color:"var(--accent)"}}>embedded</span>}
+                  <span className="text-muted">{e.hits} hits</span>
+                  {!embedded && <button onClick={() => { pool.removeKey(e.key); forceUpdate(); }} className="text-muted hover:text-red-400 ml-1">×</button>}
+                </div>;
+              }) : <div className="text-xs text-muted rounded-lg px-2 py-2" style={{background:"var(--bg-hover)"}}>Belum ada key. Isi EMBEDDED_*_KEYS di source atau tambah manual di bawah.</div>}
+            </div>
+            {pool.entries.length < 10 && <div className="flex gap-2">
+              <input type="password" placeholder={`Tambah ${label} key...`} id={`add-key-${pool.type}`} className="flex-1 elevated border rounded-lg px-3 py-2 text-sm outline-none text-primary placeholder:text-muted" />
+              <button onClick={() => {
+                const input = document.getElementById(`add-key-${pool.type}`);
+                const added = pool.addKey(input.value);
+                if (added) { input.value = ""; toast("success","Key ditambahkan."); forceUpdate(); }
+                else toast("warn","Key kosong atau sudah ada.");
+              }} className="btn-primary rounded-lg px-3 py-2 text-sm">+ Add</button>
+            </div>}
+          </div>;
+        })}
+        <p className="text-xs text-muted">Embedded key aktif untuk semua pengunjung GitHub Pages, tetapi key akan terlihat publik di source. Gunakan backend/proxy untuk produksi yang aman.</p>
       </Section>
       <Section title="🤖 Model Selection">
         <Label label="Fast Model"><Select value={settings.fastModel} onChange={v => setSettings({...settings, fastModel:v})}>{FAST_MODELS.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</Select></Label>
@@ -889,42 +1192,61 @@ function toApiMessages(chat, memory, subject, project, personality, settings) {
   });
   return apiMessages;
 }
-async function streamCompletion({settings, key, messages, onDelta, signal}) {
+/* KEY POOL MODULE */
+async function streamCompletion({settings, messages, onDelta, signal}) {
   const type = settings.modelType;
-  const model = currentModelId(settings);
-  const headers = apiHeaders(type, key);
-  const res = await fetch(type === "fast" ? GROQ_URL : OPENROUTER_URL, {
-    method:"POST", headers, signal, body:JSON.stringify({model, messages, stream:true, temperature:.4})
-  });
-  if (res.status === 429) throw new Error("RATE_LIMIT");
-  if (!res.ok || !res.body) throw new Error(await readApiError(res) || "API_ERROR");
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let usage = null, buffer = "";
-  while (true) {
-    const {done, value} = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, {stream:true});
-    const lines = buffer.split("\n");
-    buffer = lines.pop() || "";
-    for (const raw of lines) {
-      const line = raw.trim();
-      if (!line.startsWith("data: ")) continue;
-      const data = line.slice(6);
-      if (data === "[DONE]") return usage;
-      try {
-        const json = JSON.parse(data);
-        const delta = json.choices?.[0]?.delta?.content || "";
-        if (delta) onDelta(delta);
-        if (json.usage) usage = {prompt:json.usage.prompt_tokens, completion:json.usage.completion_tokens, total:json.usage.total_tokens};
-      } catch {}
+  const pool = type === "fast" ? groqPool : orPool;
+  const url = type === "fast" ? GROQ_URL : OPENROUTER_URL;
+  const maxAttempts = Math.max(pool.count, 1);
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const entry = pool.next();
+    if (!entry) throw new Error("NO_KEYS");
+    try {
+      const res = await fetch(url, {
+        method:"POST",
+        headers:apiHeaders(type, entry.key),
+        signal,
+        body:JSON.stringify({model:currentModelId(settings), messages, stream:true, temperature:.4})
+      });
+      if (res.status === 429) { pool.markRateLimit(entry.key); continue; }
+      if (res.status === 401 || res.status === 403) { pool.markDead(entry.key); continue; }
+      if (!res.ok || !res.body) { pool.markRateLimit(entry.key); continue; }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let usage = null, buffer = "";
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, {stream:true});
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+        for (const raw of lines) {
+          const line = raw.trim();
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6);
+          if (data === "[DONE]") { pool.markSuccess(entry.key); return usage; }
+          try {
+            const json = JSON.parse(data);
+            const delta = json.choices?.[0]?.delta?.content || "";
+            if (delta) onDelta(delta);
+            if (json.usage) usage = {prompt:json.usage.prompt_tokens, completion:json.usage.completion_tokens, total:json.usage.total_tokens};
+          } catch {}
+        }
+      }
+      pool.markSuccess(entry.key);
+      return usage;
+    } catch (err) {
+      if (err.name === "AbortError") throw err;
+      pool.markRateLimit(entry.key);
+      if (attempt === maxAttempts - 1) throw err;
     }
   }
-  return usage;
+  throw new Error("ALL_KEYS_EXHAUSTED");
 }
 async function extractMemory({chat, setMemory}) {
-  const groqKey = localStorage.getItem(STORAGE.groq);
-  if (!groqKey) return;
+  const entry = groqPool.next();
+  if (!entry) return;
+  const groqKey = entry.key;
   const model = "llama-3.1-8b-instant";
   const headers = {"Authorization":`Bearer ${groqKey}`, "Content-Type":"application/json"};
   const lastMsgs = (chat.messages || []).slice(-4)
@@ -938,7 +1260,10 @@ Conversation:
 ${lastMsgs}`;
   try {
     const res = await fetch(GROQ_URL, {method:"POST", headers, body:JSON.stringify({model, messages:[{role:"user", content:prompt}], temperature:0, max_tokens:100})});
+    if (res.status === 429) { groqPool.markRateLimit(groqKey); return; }
+    if (res.status === 401 || res.status === 403) { groqPool.markDead(groqKey); return; }
     if (!res.ok) return;
+    groqPool.markSuccess(groqKey);
     const txt = (await res.json()).choices?.[0]?.message?.content || "null";
     const data = JSON.parse(txt.replace(/```[a-z]*|```/g,"").trim());
     if (!data) return;
@@ -952,7 +1277,7 @@ ${lastMsgs}`;
       next.lastSeen = new Date().toISOString();
       return next;
     });
-  } catch {}
+  } catch { groqPool.markRateLimit(groqKey); }
 }
 
 /* MODULE 3: INTERACTIVE POLISH */
@@ -1029,11 +1354,12 @@ function App() {
   const [newMsgButton,setNewMsgButton] = useState(false);
   const [isDragging,setIsDragging] = useState(false);
   const [shortcutsOpen,setShortcutsOpen] = useState(false);
+  const [keyPoolTick,setKeyPoolTick] = useState(0);
   const messagesRef = useRef(null);
   const abortRef = useRef(null);
   const activeChat = chats.find(c => c.id === activeId) || null;
   const activeMessages = Array.isArray(activeChat?.messages) ? activeChat.messages : [];
-  const hasKey = Boolean(localStorage.getItem(STORAGE.groq) || localStorage.getItem(STORAGE.openrouter));
+  const hasKey = (groqPool.count + orPool.count) > 0;
   const toast = (kind, message, action) => {
     const id = uid(); setToasts(t => [...t, {id, kind, message, action}]); setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 5000);
   };
@@ -1110,8 +1436,8 @@ function App() {
     let text = input.trim();
     let sendingFiles = files;
     if (!regenerateFromId && !text && !sendingFiles.length) return;
-    const key = settings.modelType === "fast" ? localStorage.getItem(STORAGE.groq) : localStorage.getItem(STORAGE.openrouter);
-    if (!key) { toast("warn","API Key belum diatur. Buka Settings terlebih dahulu."); setSettingsOpen(true); return; }
+    const activePool = settings.modelType === "fast" ? groqPool : orPool;
+    if (activePool.count === 0) { toast("warn","Tidak ada API key tersedia. Isi embedded key pool di source atau tambahkan key di Settings."); setSettingsOpen(true); return; }
     if (!chat) {
       const now = new Date().toISOString();
       chat = {id:uid(), title:trimTitle(text || "Analisis file"), createdAt:now, updatedAt:now, projectId:null, subject, personality, model:currentModelId(settings), modelType:settings.modelType, messages:[]};
@@ -1140,7 +1466,7 @@ function App() {
       const messages = toApiMessages(updatedChat, memory, subject, project, personality, settings);
       const controller = new AbortController();
       abortRef.current = controller;
-      const usage = await streamCompletion({settings, key, messages, signal:controller.signal, onDelta:(delta) => {
+      const usage = await streamCompletion({settings, messages, signal:controller.signal, onDelta:(delta) => {
         full += delta;
         setChats(cs => cs.map(c => c.id === updatedChat.id ? {...c, messages:c.messages.map(m => m.id === assistantId ? {...m, content:full} : m), updatedAt:new Date().toISOString()} : c));
       }});
@@ -1154,9 +1480,14 @@ function App() {
         abortRef.current = null;
         return;
       }
+      const ERR_MAP = {
+        "NO_KEYS": "Tidak ada API key tersedia. Isi embedded key pool di source atau tambahkan key di Settings.",
+        "ALL_KEYS_EXHAUSTED": "Semua key gagal atau sedang cooldown. Cek status key di Settings.",
+        "RATE_LIMIT": "Semua key sedang rate-limited. Tunggu sekitar 60 detik.",
+      };
       const detail = e.message && !["API_ERROR","Failed to fetch"].includes(e.message) ? ` Detail: ${e.message}` : "";
-      const msg = e.message === "RATE_LIMIT" ? "Batas request tercapai. Tunggu beberapa saat." : `Gagal menghubungi AI. Cek API key, model, atau koneksi internet.${detail}`;
-      toast(e.message === "RATE_LIMIT" ? "warn" : "error", msg);
+      const msg = ERR_MAP[e.message] || `Gagal menghubungi AI. Cek API key, model, atau koneksi internet.${detail}`;
+      toast(e.message === "NO_KEYS" ? "warn" : "error", msg);
       setChats(cs => cs.map(c => c.id === updatedChat.id ? {...c, messages:c.messages.map(m => m.id === assistantId ? {...m, content:`**Error:** ${msg}`} : m)} : c));
     } finally { setLoading(false); abortRef.current = null; }
   }
@@ -1171,35 +1502,45 @@ function App() {
     setProjects(ps => ps.filter(p => p.id !== id));
     setChats(cs => cs.filter(c => c.projectId !== id));
   }
-  return <div className="h-full flex overflow-hidden">
+  return <div className="mobile-shell h-full flex overflow-hidden">
     <Sidebar open={sideOpen} setOpen={setSideOpen} chats={chats} projects={projects} activeId={activeId} onNew={newChat} onOpen={id=>{setActiveId(id); setSideOpen(false);}} onDeleteChat={deleteChat} onSettings={()=>setSettingsOpen(true)} onNewProject={()=>setProjectOpen(true)} onDeleteProject={deleteProject} theme={theme} toggleTheme={()=>setTheme(theme==="light"?"dark":"light")} search={search} setSearch={onSearchChange} results={searchResults} onResult={r => {setActiveId(r.chat.id); setTimeout(()=>r.messageId && document.getElementById(`msg-${r.messageId}`)?.scrollIntoView({behavior:"smooth", block:"center"}),50);}} />
     {sideOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={()=>setSideOpen(false)} />}
     <main className="main flex-1 flex flex-col min-w-0 overflow-hidden">
-      <header className="h-14 surface border-b flex items-center justify-between px-4" style={{borderColor:"var(--border)"}}>
+      <div className="mobile-topbar">
+        <button className="mobile-round-btn" onClick={()=>setSideOpen(true)} aria-label="Buka menu"><Icon name="menu" /></button>
+        <button className="mobile-round-btn logo-btn" onClick={()=>setSettingsOpen(true)} aria-label="Buka settings"><span className="brand-logo w-full h-full rounded-full"><img src="vt-ai-logo.png" alt="VT AI" /></span></button>
+      </div>
+      <div className="mobile-promo">
+        <span>Virtual Teacher.AI</span>
+        <button onClick={()=>setSettingsOpen(true)}>Settings</button>
+      </div>
+      <header className="app-header h-14 surface border-b flex items-center justify-between px-4" style={{borderColor:"var(--border)"}}>
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <button className="w-9 h-9 rounded-lg hoverable md:hidden" onClick={()=>setSideOpen(true)}><Icon name="menu" /></button>
           <button className="w-9 h-9 rounded-lg hoverable hidden md:block" onClick={()=>setSideOpen(true)}><Icon name="menu" /></button>
+          <div className="brand-logo sidebar-brand-logo w-8 h-8 rounded-lg hidden sm:inline-grid"><img src="vt-ai-logo.png" alt="VT AI" /></div>
           <div className="font-semibold truncate">{activeChat?.title || "VT AI"}</div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={()=>setShortcutsOpen(true)} className="elevated border rounded-full px-3 py-1.5 text-sm hoverable" title="Keyboard shortcuts">?</button>
           <button onClick={()=>setPersonality(personality==="friendly"?"pro":"friendly")} className="elevated border rounded-full px-3 py-1.5 text-sm hoverable"><span className="md:hidden">{personality==="friendly"?"🌟":"⚡"}</span><span className="hidden md:inline">{personality==="friendly"?"🌟 Friendly":"⚡ Pro"}</span></button>
+          <KeyStatusPill />
           <ModelDropdown settings={settings} setSettings={setSettings} direction="down" className="hidden md:block w-[260px] lg:w-[330px]" />
         </div>
       </header>
-      <div ref={messagesRef} onScroll={e => setNewMsgButton(e.currentTarget.scrollHeight - e.currentTarget.scrollTop - e.currentTarget.clientHeight > 260)} onDragEnter={() => setIsDragging(true)} onDragLeave={e => { if(!e.currentTarget.contains(e.relatedTarget)) setIsDragging(false); }} onDrop={e => {e.preventDefault(); setIsDragging(false); onFiles([...e.dataTransfer.files]);}} onDragOver={e => e.preventDefault()} className="flex-1 overflow-y-auto scrollbar relative">
+      <div ref={messagesRef} onScroll={e => setNewMsgButton(e.currentTarget.scrollHeight - e.currentTarget.scrollTop - e.currentTarget.clientHeight > 260)} onDragEnter={() => setIsDragging(true)} onDragLeave={e => { if(!e.currentTarget.contains(e.relatedTarget)) setIsDragging(false); }} onDrop={e => {e.preventDefault(); setIsDragging(false); onFiles([...e.dataTransfer.files]);}} onDragOver={e => e.preventDefault()} className="messages-pane flex-1 overflow-y-auto scrollbar relative">
         <div className={`drag-overlay ${isDragging ? "active" : ""}`} onDrop={e => { e.preventDefault(); setIsDragging(false); onFiles([...e.dataTransfer.files]); }} onDragOver={e => e.preventDefault()}>📎 Lepaskan file di sini</div>
         {!activeChat || activeChat.messages.length === 0 ? <Welcome hasKey={hasKey} onSubject={(s)=>{setSubject(s); newChat(s);}} /> :
-          <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 pb-16">
+          <div className="messages-list max-w-4xl mx-auto p-4 md:p-8 space-y-6 pb-16">
             {activeChat.messages.map(m => <Message key={m.id} msg={m} onCopy={copyMsg} onRegenerate={(msg)=>send(msg.id)} searchTerm={debouncedSearch} />)}
             {loading && <Typing thinking={settings.modelType === "thinking"} />}
           </div>}
         {newMsgButton && <button onClick={()=>{messagesRef.current.scrollTop=messagesRef.current.scrollHeight; setNewMsgButton(false);}} className="absolute bottom-4 left-1/2 btn-primary rounded-full px-4 py-2 text-sm shadow-xl scroll-bounce">↓ Pesan baru</button>}
       </div>
-      <div className="px-4 pb-1 text-center text-[11px] text-muted">⚠️ VT AI menggunakan data training AI. Verifikasi materi penting dengan buku paket resmi (BSE Kemdikbud). Untuk Matematika, selalu cek kembali perhitungan.</div>
+      <div className="disclaimer px-4 pb-1 text-center text-[11px] text-muted">⚠️ VT AI menggunakan data training AI. Verifikasi materi penting dengan buku paket resmi (BSE Kemdikbud). Untuk Matematika, selalu cek kembali perhitungan.</div>
       <InputBar value={input} setValue={setInput} onSend={()=>send()} loading={loading} files={files} setFiles={setFiles} onFiles={onFiles} subject={subject} setSubject={setSubject} settings={settings} setSettings={setSettings} activeChat={activeChat} abortRef={abortRef} />
     </main>
-    <SettingsModal open={settingsOpen} onClose={()=>setSettingsOpen(false)} settings={settings} setSettings={setSettings} memory={memory} setMemory={setMemory} toast={toast} />
+    <SettingsModal open={settingsOpen} onClose={()=>setSettingsOpen(false)} settings={settings} setSettings={setSettings} memory={memory} setMemory={setMemory} toast={toast} onPoolChange={()=>setKeyPoolTick(x => x + 1)} />
     <ProjectModal open={projectOpen} onClose={()=>setProjectOpen(false)} onSave={addProject} />
     <ShortcutsOverlay open={shortcutsOpen} onClose={()=>setShortcutsOpen(false)} />
     <Toasts toasts={toasts} onClose={id => setToasts(t => t.filter(x => x.id !== id))} />
