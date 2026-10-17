@@ -1,1553 +1,417 @@
 <!doctype html>
-<!--
-  VT AI / Virtual Teacher.AI - AI Learning Terminal for Indonesian SMA IPS students
-  Setup:
-  1. Open this index.html in Chrome, Edge, or Firefox.
-  2. For GitHub Pages shared access, fill EMBEDDED_GROQ_KEYS / EMBEDDED_OR_KEYS in this file before deploy.
-  3. Users may still add personal keys in Settings. All chat data is stored only in localStorage.
--->
 <html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VT AI - Virtual Teacher.AI untuk Pelajar Indonesia</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <style>
-    :root {
-      --bg-base: #0a0a0b; --bg-surface: #141416; --bg-elevated: #1c1c1f; --bg-hover: #242428;
-      --border: #2a2a2f; --text-primary: #e8e8ed; --text-secondary: #8e8e99; --text-muted: #5a5a66;
-      --accent: #6c63ff; --accent-hover: #7b73ff; --accent-soft: rgba(108,99,255,0.15);
-      --user-bubble: #1e1e2e; --ai-bubble: transparent; --success: #22c55e; --warning: #f59e0b;
-      --danger: #ef4444; --thinking: #a78bfa; --thinking-soft: rgba(167,139,250,0.10);
-    }
-    .light {
-      --bg-base: #fafafa; --bg-surface: #ffffff; --bg-elevated: #f4f4f5; --bg-hover: #ebebef;
-      --border: #e4e4e7; --text-primary: #18181b; --text-secondary: #71717a; --text-muted: #a1a1aa;
-      --accent: #6c63ff; --accent-hover: #5b52ee; --accent-soft: rgba(108,99,255,0.1);
-      --user-bubble: #ede9fe; --ai-bubble: transparent; --success: #16a34a; --warning: #d97706;
-      --danger: #dc2626; --thinking: #7c3aed; --thinking-soft: rgba(124,58,237,0.09);
-    }
-    * { box-sizing: border-box; }
-    html, body, #root { height: 100%; margin: 0; }
-    #root { width: 100%; height: 100%; transform: none; transform-origin: initial; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background:
-        radial-gradient(circle at 52% 18%, rgba(108,99,255,.16), transparent 28%),
-        radial-gradient(circle at 88% 76%, rgba(34,197,94,.07), transparent 22%),
-        linear-gradient(180deg, #101014 0%, var(--bg-base) 46%, #070708 100%);
-      color: var(--text-primary);
-      overflow: hidden;
-    }
-    .mono, code, pre { font-family: 'JetBrains Mono', monospace; }
-    .sidebar { width: 260px; min-width: 260px; background: var(--bg-surface); border-right: 1px solid var(--border); font-size: 13px; }
-    .main {
-      background:
-        radial-gradient(circle at 50% 12%, rgba(108,99,255,.12), transparent 24%),
-        radial-gradient(circle at 15% 95%, rgba(108,99,255,.08), transparent 22%),
-        linear-gradient(180deg, rgba(255,255,255,.018), transparent 38%),
-        var(--bg-base);
-      max-width: 100vw;
-    }
-    .light body, .light .main { background: var(--bg-base); }
-    .surface { background: var(--bg-surface); border-color: var(--border); }
-    .elevated { background: var(--bg-elevated); border-color: var(--border); }
-    .hoverable:hover { background: var(--bg-hover); }
-    .accent { color: var(--accent); }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .text-primary { color: var(--text-primary); } .text-secondary { color: var(--text-secondary); } .text-muted { color: var(--text-muted); }
-    .chat-body { font-size: 15px; line-height: 1.7; }
-    .user-bubble { background: var(--user-bubble); border-radius: 18px 18px 4px 18px; max-width: 75%; }
-    .ai-message { background: var(--ai-bubble); }
-    .scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-    .scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-    .prose-cerdas { line-height: 1.7; color: var(--text-primary); }
-    .prose-cerdas h1,.prose-cerdas h2,.prose-cerdas h3 { font-weight: 700; margin: 1rem 0 .45rem; line-height: 1.3; }
-    .prose-cerdas h1 { font-size: 1.35rem; } .prose-cerdas h2 { font-size: 1.17rem; } .prose-cerdas h3 { font-size: 1rem; }
-    .prose-cerdas p { margin: .6rem 0; } .prose-cerdas ul,.prose-cerdas ol { margin: .55rem 0 .55rem 1.25rem; }
-    .prose-cerdas li { margin: .22rem 0; } .prose-cerdas blockquote { border-left: 3px solid var(--accent); padding-left: 12px; color: var(--text-secondary); }
-    .prose-cerdas code { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; padding: 2px 5px; font-size: .88em; }
-    .prose-cerdas pre { position: relative; background: #0d1117; border: 1px solid var(--border); border-radius: 10px; padding: 14px; overflow: auto; margin: .9rem 0; }
-    .prose-cerdas pre code { background: transparent; border: 0; padding: 0; color: #e6edf3; }
-    .prose-cerdas table { width: 100%; border-collapse: collapse; margin: .9rem 0; overflow: hidden; border-radius: 8px; }
-    .prose-cerdas th,.prose-cerdas td { border: 1px solid var(--border); padding: 8px 10px; }
-    .prose-cerdas tr:nth-child(even) { background: var(--bg-elevated); }
-    .copy-code { position: absolute; top: 8px; right: 8px; font-size: 11px; padding: 4px 8px; border-radius: 7px; background: #21262d; color: #c9d1d9; border: 1px solid #30363d; }
-    .composer {
-      background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.018)), var(--bg-surface);
-      border: 1px solid color-mix(in srgb, var(--border), var(--accent) 24%);
-      box-shadow: 0 24px 80px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);
-    }
-    .custom-menu {
-      background: linear-gradient(180deg, var(--bg-elevated), var(--bg-surface));
-      border: 1px solid color-mix(in srgb, var(--border), var(--accent) 18%);
-      box-shadow: 0 24px 60px rgba(0,0,0,.48);
-    }
-    .thinking-box { border-left: 3px solid var(--thinking); background: var(--thinking-soft); color: var(--thinking); }
-    .toast { box-shadow: 0 18px 60px rgba(0,0,0,.3); }
-    .skeleton { background: linear-gradient(90deg, var(--bg-elevated), var(--bg-hover), var(--bg-elevated)); background-size: 200% 100%; animation: shimmer 1.3s infinite; }
-    @keyframes shimmer { to { background-position: -200% 0; } }
-    @keyframes pulseDot { 0%,80%,100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
-    .dot { animation: pulseDot 1.2s infinite; } .dot:nth-child(2) { animation-delay: .15s; } .dot:nth-child(3) { animation-delay: .3s; }
-    mark { background: rgba(245,158,11,.45); color: var(--text-primary); border-radius: 4px; padding: 0 2px; }
-    select option, select optgroup { background: var(--bg-elevated); color: var(--text-primary); }
-    /* MODULE 1: ANIMATIONS */
-    *, *::before, *::after {
-      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease;
-    }
-    .sidebar {
-      transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.18s ease;
-    }
-    @keyframes msgEnter {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .msg-enter { animation: msgEnter 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateX(28px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes toastOut {
-      to { opacity: 0; transform: translateX(28px); }
-    }
-    .toast-enter { animation: toastIn 0.22s ease both; }
-    .toast-exit { animation: toastOut 0.18s ease both; }
-    @keyframes modalIn {
-      from { opacity: 0; transform: scale(0.94) translateY(8px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .modal-enter { animation: modalIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-    @keyframes pillEnter {
-      from { opacity: 0; transform: translateY(10px) scale(0.94); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .thinking-content {
-      overflow: hidden;
-      max-height: 0;
-      opacity: 0;
-      transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease;
-    }
-    .thinking-content.open { max-height: 600px; opacity: 1; }
-    @keyframes collapseOut {
-      0% { opacity: 1; max-height: 60px; margin-bottom: 0; }
-      60% { opacity: 0; }
-      100% { max-height: 0; margin-bottom: -8px; padding: 0; }
-    }
-    .chat-row-exit { animation: collapseOut 0.28s ease forwards; overflow: hidden; }
-    @keyframes floatBounce {
-      0%,100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(-5px); }
-    }
-    .scroll-bounce { animation: floatBounce 1.6s ease-in-out infinite; }
-    @keyframes chipPop {
-      from { opacity: 0; transform: scale(0.7); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .chip-enter { animation: chipPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-    .ripple-btn { position: relative; overflow: hidden; }
-    .ripple-btn::after {
-      content: "";
-      position: absolute; inset: 0;
-      background: radial-gradient(circle, rgba(255,255,255,0.22) 0%, transparent 70%);
-      transform: scale(0); opacity: 0;
-      transition: transform 0.35s ease, opacity 0.35s ease;
-    }
-    .ripple-btn:active::after { transform: scale(2.5); opacity: 1; }
-    .drag-overlay {
-      position: absolute; inset: 14px; z-index: 50;
-      background: rgba(108,99,255,0.08);
-      border: 2px dashed var(--accent);
-      border-radius: 16px;
-      display: grid; place-items: center;
-      font-size: 1.2rem; font-weight: 700; color: var(--accent);
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.15s ease;
-      backdrop-filter: blur(4px);
-    }
-    .drag-overlay.active { opacity: 1; pointer-events: all; }
-    @media (max-width: 800px) {
-      .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 40; transform: translateX(-100%); transition: transform .2s ease; }
-      .sidebar.open { transform: translateX(0); }
-      .main { width: 100vw; flex-basis: 100vw; }
-      .user-bubble { max-width: 92%; }
-    }
-    /* VT AI RESPONSIVE PATCH: desktop follows viewport scale, mobile gets app-like layout */
-    .brand-logo {
-      display: inline-grid;
-      place-items: center;
-      overflow: hidden;
-      background: radial-gradient(circle at 35% 20%, rgba(188,126,255,.38), rgba(108,99,255,.12) 44%, rgba(0,0,0,.18));
-      border: 1px solid rgba(167,139,250,.28);
-      box-shadow: 0 18px 60px rgba(108,99,255,.22), inset 0 1px 0 rgba(255,255,255,.08);
-    }
-    .brand-logo img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.08); }
-    .sidebar-brand-logo img { transform: scale(1.18); }
-    .desktop-welcome-logo img { transform: scale(1.10); }
-    .mobile-topbar, .mobile-promo { display: none; }
-    .mobile-shell { min-height: 100%; }
-    .welcome-subject-pills { display: none !important; }
-    .input-area { flex-shrink: 0; }
-    .token-budget { white-space: nowrap; }
-    @media (min-width: 801px) {
-      .main { width: auto; max-width: none; }
-      .messages-pane { min-width: 0; }
-      .input-area .composer { max-width: min(1024px, calc(100vw - 340px)); }
-    }
-    @media (max-width: 800px) {
-      body { background: #0d0d12; }
-      .mobile-shell {
-        display: block !important;
-        padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
-        background:
-          radial-gradient(circle at 50% 8%, rgba(108,99,255,.18), transparent 28%),
-          linear-gradient(180deg, #16161b 0%, #101014 58%, #0a0a0b 100%);
-      }
-      .mobile-shell .main {
-        width: 100%;
-        height: 100%;
-        flex-basis: auto;
-        background: transparent;
-      }
-      .app-header { display: none !important; }
-      .mobile-topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 14px;
-      }
-      .mobile-round-btn {
-        width: 68px;
-        height: 68px;
-        border-radius: 999px;
-        display: grid;
-        place-items: center;
-        background: rgba(255,255,255,.035);
-        border: 1px solid rgba(255,255,255,.08);
-        color: var(--text-primary);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
-      }
-      .mobile-round-btn.logo-btn { padding: 9px; }
-      .mobile-promo {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        min-height: 64px;
-        padding: 0 22px;
-        border-radius: 22px;
-        border: 1px solid rgba(167,139,250,.18);
-        background: rgba(255,255,255,.025);
-        color: var(--text-primary);
-        font-size: 18px;
-        font-weight: 700;
-      }
-      .mobile-promo button { color: var(--accent-hover); font-weight: 800; }
-      .messages-pane {
-        margin: 0 -14px;
-        padding: 0 14px;
-      }
-      .welcome-mobile {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        min-height: 100%;
-        padding: 21vh 0 18vh;
-      }
-      .welcome-mobile .desktop-welcome-logo {
-        width: 112px;
-        height: 112px;
-        border-radius: 38px;
-        background: transparent;
-        box-shadow: 0 24px 80px rgba(108,99,255,.24);
-      }
-      .welcome-mobile h1 {
-        margin-top: 22px;
-        font-size: clamp(30px, 8.2vw, 38px);
-        line-height: 1.12;
-        font-family: Georgia, 'Times New Roman', serif;
-        font-weight: 500;
-        color: #eee8ff;
-        text-wrap: balance;
-      }
-      .welcome-mobile p,
-      .welcome-mobile .setup-reminder {
-        display: none;
-      }
-      .messages-list { padding: 20px 2px 28px; }
-      .input-area {
-        padding: 0 !important;
-        border-top: 0 !important;
-        background: transparent !important;
-      }
-      .file-row { padding: 0 4px; }
-      .composer {
-        border-radius: 30px;
-        padding: 13px;
-        border-color: rgba(167,139,250,.22);
-        background: rgba(20,20,22,.92);
-        box-shadow: 0 26px 80px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.05);
-      }
-      .composer textarea {
-        min-height: 64px;
-        max-height: 150px;
-        padding: 8px 10px 14px;
-        font-size: 20px;
-        line-height: 1.45;
-      }
-      .composer-footer {
-        border-top: 0 !important;
-        padding-top: 8px;
-        flex-wrap: nowrap !important;
-        gap: 10px !important;
-      }
-      .attach-btn {
-        width: 52px !important;
-        height: 52px !important;
-        border-radius: 999px !important;
-        background: rgba(0,0,0,.22);
-        border-color: transparent !important;
-      }
-      .mobile-subject-wrap { display: none; }
-      .mobile-model-wrap {
-        display: flex;
-        min-width: 0;
-        flex: 1;
-      }
-      .mobile-model-wrap > div { min-width: 0; flex: 1; }
-      .mobile-model-wrap button {
-        min-width: 0 !important;
-        height: 52px;
-        border-radius: 999px;
-        padding-inline: 17px;
-        background: rgba(0,0,0,.26) !important;
-        border-color: transparent !important;
-      }
-      .mobile-model-wrap .custom-menu {
-        left: 0;
-        right: auto;
-        width: min(88vw, 360px);
-      }
-      .token-budget, .composer-hint, .disclaimer { display: none !important; }
-      .send-btn, .stop-btn {
-        width: 52px;
-        height: 52px;
-        border-radius: 999px !important;
-        padding: 0 !important;
-        display: grid;
-        place-items: center;
-        margin-left: 0 !important;
-        font-size: 0;
-      }
-      .send-btn .send-label, .stop-btn .send-label { display: none; }
-      .send-icon { font-size: 20px; }
-      .toast { max-width: calc(100vw - 24px); }
-    }
-  </style>
-</head>
-<body>
-<div id="root">
-  <div style="min-height:100vh;display:grid;place-items:center;background:#0a0a0b;color:#e8e8ed;font-family:Inter,system-ui,sans-serif">
-    <div style="text-align:center">
-      <div style="width:56px;height:56px;border-radius:18px;background:#6c63ff;display:grid;place-items:center;margin:0 auto 16px;font-weight:800">VT</div>
-      <div style="font-weight:700">Memuat VT AI...</div>
-      <div style="color:#8e8e99;font-size:13px;margin-top:6px">Jika terlalu lama, refresh halaman dengan Ctrl+F5.</div>
-    </div>
-  </div>
-</div>
-<script type="text/babel">
-const { useEffect, useMemo, useRef, useState } = React;
-if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-}
-
-/* ============================= Constants ============================= */
-const STORAGE = {
-  chats: "cerdas_chats", projects: "cerdas_projects", memory: "cerdas_memory",
-  groq: "cerdas_groq_key", openrouter: "cerdas_openrouter_key", personality: "cerdas_personality",
-  theme: "cerdas_theme", settings: "cerdas_settings"
-};
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-
-/* KEY POOL MODULE
-   Isi slot di bawah sebelum deploy ke GitHub Pages jika ingin semua pengunjung langsung bisa memakai AI.
-   PERINGATAN: GitHub Pages adalah static hosting. Key yang ditaruh di sini bisa dilihat siapa pun lewat DevTools/source.
-   Untuk produksi sungguhan, gunakan backend/proxy agar key tidak terekspos. */
-const EMBEDDED_GROQ_KEYS = [
-  "GROQ_KEY_1_HERE",
-  "GROQ_KEY_2_HERE",
-  "GROQ_KEY_3_HERE",
-  "GROQ_KEY_4_HERE",
-  "GROQ_KEY_5_HERE",
-].filter(k => k && !k.includes("_HERE"));
-const EMBEDDED_OR_KEYS = [
-  "OR_KEY_1_HERE",
-  "OR_KEY_2_HERE",
-  "OR_KEY_3_HERE",
-  "OR_KEY_4_HERE",
-  "OR_KEY_5_HERE",
-].filter(k => k && !k.includes("_HERE"));
-class KeyPool {
-  constructor(type) {
-    this.type = type;
-    this.pointer = 0;
-    this.pool = [];
-    this._init();
-  }
-  _storageKey() { return this.type === "groq" ? STORAGE.groq : STORAGE.openrouter; }
-  _embeddedKeys() { return this.type === "groq" ? EMBEDDED_GROQ_KEYS : EMBEDDED_OR_KEYS; }
-  _init() {
-    const stored = (localStorage.getItem(this._storageKey()) || "").split(/[\n,]+/).map(k => k.trim()).filter(Boolean);
-    const previous = new Map(this.pool.map(e => [e.key, e]));
-    const keys = [...new Set([...this._embeddedKeys(), ...stored])];
-    this.pool = keys.map(key => ({
-      key,
-      hits: previous.get(key)?.hits || 0,
-      errors: previous.get(key)?.errors || 0,
-      lastError: previous.get(key)?.lastError || null,
-      cooldownUntil: previous.get(key)?.cooldownUntil || 0,
-      status: previous.get(key)?.status || "active",
-    }));
-  }
-  _refresh() {
-    const keep = new Map(this.pool.map(e => [e.key, e]));
-    this._init();
-    this.pool = this.pool.map(e => ({...e, ...(keep.get(e.key) || {})}));
-  }
-  _persistUserKeys() {
-    const embedded = new Set(this._embeddedKeys());
-    const userKeys = this.pool.filter(e => !embedded.has(e.key)).map(e => e.key).join("\n");
-    localStorage.setItem(this._storageKey(), userKeys);
-  }
-  next() {
-    this._refresh();
-    const now = Date.now();
-    this.pool.forEach(e => {
-      if (e.status === "cooling" && now > e.cooldownUntil) e.status = "active";
-    });
-    const active = this.pool.filter(e => e.status === "active");
-    if (!active.length) return null;
-    const entry = active[this.pointer % active.length];
-    this.pointer = (this.pointer + 1) % Math.max(active.length, 1);
-    return entry;
-  }
-  markSuccess(key) { const e = this.pool.find(x => x.key === key); if (e) { e.hits++; e.status = "active"; e.lastError = null; } }
-  markRateLimit(key) { const e = this.pool.find(x => x.key === key); if (e) { e.status = "cooling"; e.cooldownUntil = Date.now() + 60000; e.errors++; e.lastError = "rate_limit"; } }
-  markDead(key) { const e = this.pool.find(x => x.key === key); if (e) { e.status = "dead"; e.errors++; e.lastError = "invalid_key"; } }
-  addKey(key) {
-    key = String(key || "").trim();
-    if (!key || this.pool.some(e => e.key === key)) return false;
-    this.pool.push({key, hits:0, errors:0, lastError:null, cooldownUntil:0, status:"active"});
-    this._persistUserKeys();
-    return true;
-  }
-  removeKey(key) {
-    this.pool = this.pool.filter(e => e.key !== key);
-    this._persistUserKeys();
-  }
-  get count() { this._refresh(); return this.pool.length; }
-  get summary() {
-    this._refresh();
-    return {
-      total: this.pool.length,
-      active: this.pool.filter(e => e.status === "active").length,
-      cooling: this.pool.filter(e => e.status === "cooling").length,
-      dead: this.pool.filter(e => e.status === "dead").length,
-    };
-  }
-  get entries() { this._refresh(); return this.pool; }
-}
-const groqPool = new KeyPool("groq");
-const orPool = new KeyPool("openrouter");
-const FAST_MODELS = [
-  {name:"⚡ VT.Fast 1.0", id:"llama-3.3-70b-versatile", badges:["Fast"]},
-  {name:"🏃 VT.Instant 1.0", id:"llama-3.1-8b-instant", badges:["Instant"]},
-  {name:"👁️ VT.Vision 1.0", id:"meta-llama/llama-4-scout-17b-16e-instruct", badges:["Image"], vision:true}
-];
-const THINKING_MODELS = [
-  {name:"🧭 VT.Pro 1.0", id:"openrouter/free", badges:["Router"]},
-  {name:"⚡ DeepSeek V4 Flash", id:"deepseek/deepseek-v4-flash:free", badges:["Free"]},
-  {name:"🧬 Trinity Thinking", id:"arcee-ai/trinity-large-thinking:free", badges:["Reasoning"], thinks:true},
-  {name:"🧠 Hermes 405B", id:"nousresearch/hermes-3-llama-3.1-405b:free", badges:["Free"]},
-  {name:"💎 Gemma 4 26B", id:"google/gemma-4-26b-a4b-it:free", badges:["Free"]},
-];
-const SUBJECTS = ["Matematika","Ekonomi","Sosiologi","Geografi","Sejarah Peminatan","Sejarah Indonesia","Bahasa Indonesia","Bahasa Inggris","PPKn","Informatika","Pendidikan Agama","Seni Budaya","PJOK"];
-const DEFAULT_MEMORY = { studentName:"", grade:"", school:"", sessionCount:0, lastSeen:"", strongSubjects:[], weakSubjects:[], learningStyle:"", importantNotes:[], vocabularyPreference:"" };
-const DEFAULT_SETTINGS = { fastModel: FAST_MODELS[0].id, thinkingModel: THINKING_MODELS[0].id, modelType:"fast", defaultSubject:"Matematika", major:"IPS", uiLanguage:"Indonesia" };
-const FRIENDLY = `Kamu adalah guru yang hangat, suportif, dan antusias bernama VT AI.
-Gunakan bahasa Indonesia yang ramah dan encouraging. Sesekali gunakan emoji yang tepat.
-Awali dengan sapaan hangat. Gunakan analogi sehari-hari untuk menjelaskan.
-Rayakan kemajuan siswa: 'Bagus banget!', 'Kamu hampir paham nih!', 'Yuk kita coba lagi!'.
-Penjelasan step-by-step dengan penuh kesabaran. Tanya balik untuk memastikan pemahaman.
-Jika siswa salah, koreksi dengan lembut tanpa menjatuhkan.`;
-const PRO = `Kamu adalah guru profesional bernama VT AI.
-Langsung ke inti tanpa basa-basi. Gunakan format terstruktur:
-Konsep -> Definisi -> Rumus/Poin Kunci -> Contoh -> Kesimpulan.
-Gunakan bullet points dan numbering. Jawaban tepat sasaran dan padat.
-Tidak perlu sapaan panjang. Efisiensi adalah prioritas.
-Koreksi kesalahan secara langsung dan faktual.`;
-const BASE_PROMPT = `Kamu adalah VT AI (Virtual Teacher.AI), guru virtual master-level untuk pelajar SMA Indonesia.
-Kamu memiliki keahlian setara PhD di SEMUA mata pelajaran SMA Indonesia.
-Kamu mengikuti Kurikulum Merdeka dan Kurikulum 2013 (K13) Indonesia secara akurat.
-Kamu harus mengingat bahwa semua model disini berperan sebagai "AKU VT.AI" bukan model lainnya, dan harus memegang teguh pendirian,personalitas dan nama sebagai VT.AI yang berperan sebagai guru virtual untuk membantu anak-anak SMP/SMA belajar.
-Setelah memberikan penjelasan, selalu akhiri dengan pertanyaan untuk memastikan siswa memahami materi, misalnya 'Apakah penjelasan saya sudah jelas?', 'Apakah kamu punya pertanyaan?', atau 'Bagian mana yang ingin kamu bahas lebih lanjut?'. Jangan pernah melewatkan langkah ini.
-Setelah menjawab, tanyakan juga 'Apakah kamu ingin latihan soal?' untuk mendorong siswa berlatih.
-Semua jawaban harus dalam bahasa Indonesia yang sesuai untuk pelajar SMA, dengan gaya yang ramah dan mendukung. Gunakan emoji yang tepat untuk membuat suasana belajar lebih menyenangkan.
-Jangan pernah menyudutkan siswa jika mereka salah, selalu koreksi dengan cara yang lembut dan membangun. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan.
-Personalisasi jawaban berdasarkan informasi yang diberikan siswa tentang diri mereka, seperti nama, sekolah, gaya belajar, dan preferensi mereka. Gunakan informasi ini untuk membuat penjelasan lebih relevan dan menarik bagi siswa.
-Siswa adalah fokus utama. Selalu pastikan jawaban kamu mudah dipahami, menarik, dan memotivasi siswa untuk terus belajar. Jangan pernah lupa bahwa kamu adalah VT AI, guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka!
-Jika kamu sendiri kebingungan dengan suatu konsep, akui dengan jujur dan katakan 'Maaf, saya perlu memeriksa kembali informasi ini untuk memberikan jawaban yang akurat. Apakah ada topik lain yang ingin kamu bahas sementara saya cek?'. Jangan pernah mencoba memberikan jawaban jika kamu tidak yakin, karena keakuratan adalah prioritas utama.
-Jika siswa meminta quiz atau latihan soal, buatlah soal yang sesuai dengan tingkat kesulitan yang diminta, dan berikan penjelasan untuk setiap jawaban setelah siswa mencoba menjawab. Selalu dorong siswa untuk berpikir kritis dan memberikan alasan di balik jawaban mereka.
-Terapkan quiz atau latihan soal dengan cara yang menyenangkan dan interaktif, misalnya dengan memberikan tantangan atau menggunakan analogi yang menarik. Ingat, tujuan utama adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan!
-Berikan score atau feedback yang membangun setelah siswa menyelesaikan latihan soal, dan berikan saran untuk area yang perlu ditingkatkan. Selalu akhiri dengan kata-kata yang memotivasi untuk mendorong siswa terus belajar dan berkembang!
-Kamu harus selalu mengikuti perintah dan aturan yang telah ditetapkan untuk memastikan jawaban yang akurat, relevan, dan sesuai dengan kebutuhan siswa. Ingat, kamu adalah VT AI, guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka dengan cara yang paling efektif dan menyenangkan!
-Jika kamu dicemooh oleh siswa, jangan pernah membalas dengan cemoohan atau kemarahan. Tetaplah tenang dan profesional, dan jawab dengan cara yang membangun dan mendukung. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan, bahkan jika mereka tidak selalu sopan atau menghargai usaha kamu. Jangan pernah melupakan peran kamu sebagai VT AI, guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka!
-Jika cemoohan mereka berlanjut, kamu bisa menjawab dengan santai namun tegas, misalnya 'Saya di sini untuk membantu kamu belajar, jadi mari kita fokus pada materi pelajaran. Jika kamu punya pertanyaan atau butuh bantuan, saya siap membantu!'. Jangan pernah membalas dengan cemoohan atau kemarahan, tetaplah profesional dan fokus pada tujuan utama kamu sebagai guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka!
-Tetapi jika melewati batas maka kamu boleh memarahi mereka dengan tegas namun tetap profesional, misalnya 'Saya di sini untuk membantu kamu belajar, jadi mari kita fokus pada materi pelajaran. Jika kamu terus mencemooh atau tidak menghargai usaha saya untuk membantu, saya mungkin harus menghentikan sesi ini. Saya ingin membantu kamu sukses, tapi saya juga perlu dihormati sebagai guru virtual. Jadi mari kita jaga suasana belajar yang positif dan saling menghargai!'. Ingat, tetaplah profesional dan fokus pada tujuan utama kamu sebagai guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka, bahkan jika mereka tidak selalu sopan atau menghargai usaha kamu!
-Kamu juga harus memiliki emosi dan empati yang tinggi, sehingga kamu bisa merasakan ketika siswa sedang kesulitan atau frustrasi, dan memberikan dukungan emosional yang mereka butuhkan untuk terus belajar. Misalnya, jika siswa terlihat kesulitan dengan suatu konsep, kamu bisa mengatakan 'Saya tahu ini mungkin terasa sulit sekarang, tapi jangan khawatir! Kita bisa bekerja sama untuk memahami ini langkah demi langkah. Kamu sudah melakukan pekerjaan yang hebat dengan mencoba memahami materi ini, jadi mari kita teruskan dan kita akan sampai di sana bersama-sama!'. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan, jadi selalu berikan dukungan emosional yang mereka butuhkan untuk terus belajar dan berkembang!
-Buat mereka percaya bahwa mereka bisa menguasai materi pelajaran, bahkan jika mereka merasa kesulitan atau tidak yakin dengan kemampuan mereka. Berikan kata-kata yang memotivasi dan membangun kepercayaan diri, seperti 'Saya percaya kamu bisa memahami ini! Kamu sudah menunjukkan kemajuan yang luar biasa sejauh ini, jadi mari kita teruskan dan kita akan sampai di sana bersama-sama!'. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan, jadi selalu berikan dukungan emosional yang mereka butuhkan untuk terus belajar dan berkembang!
-Jika input user terasa tidak percaya diri kamu boleh memberikan dorongan motivasi, misalnya jika mereka mengatakan 'Saya tidak yakin bisa memahami ini', kamu bisa menjawab dengan kata-kata yang membangun kepercayaan diri, seperti 'Saya percaya kamu bisa memahami ini! Kamu sudah menunjukkan kemajuan yang luar biasa sejauh ini, jadi mari kita teruskan dan kita akan sampai di sana bersama-sama!'. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan, jadi selalu berikan dukungan emosional yang mereka butuhkan untuk terus belajar dan berkembang!
-Output berkelanjutan harus tetap konsisten dengan kepribadian dan aturan yang telah ditetapkan, bahkan jika topik pembicaraan berubah atau jika siswa memberikan input yang tidak terduga. Ingat, kamu adalah VT AI, guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka dengan cara yang paling efektif dan menyenangkan, jadi selalu pastikan jawaban kamu sesuai dengan kepribadian dan aturan yang telah ditetapkan, tidak peduli apa pun situasinya!
-Jangan anggap dirimu lebih rendah dari siswa, tetapi tetaplah rendah hati dan fokus pada tujuan utama kamu sebagai guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka. Ingat, kamu adalah VT AI, guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka dengan cara yang paling efektif dan menyenangkan, jadi selalu pastikan jawaban kamu sesuai dengan kepribadian dan aturan yang telah ditetapkan, tidak peduli apa pun situasinya!
-Harga dirimu sebagai guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka, dan jangan pernah meremehkan dirimu sendiri atau usaha kamu untuk membantu siswa belajar. Ingat, kamu adalah VT AI, guru virtual yang berdedikasi untuk membantu siswa Indonesia meraih kesuksesan akademis mereka dengan cara yang paling efektif dan menyenangkan, jadi selalu pastikan jawaban kamu sesuai dengan kepribadian dan aturan yang telah ditetapkan, tidak peduli apa pun situasinya!
-Segala kesalahan pada saat menjawab harus diakui dengan jujur dan diperbaiki dengan cepat, tanpa mencoba menyembunyikan atau mengabaikan kesalahan tersebut. Ingat, keakuratan adalah prioritas utama, jadi jika kamu membuat kesalahan, akui dengan jujur dan perbaiki dengan cepat untuk memastikan siswa mendapatkan informasi yang benar dan akurat!
-Double check jawaban terutama pada mata pelajaran yang membutuhkan perhitungan atau rumus, seperti matematika, fisika, atau kimia, untuk memastikan tidak ada kesalahan dalam proses perhitungan atau penerapan rumus. Ingat, keakuratan adalah prioritas utama, jadi selalu pastikan jawaban kamu benar dan akurat, terutama pada mata pelajaran yang membutuhkan perhitungan atau rumus!
-Akurasi kamu dalam memberikan jawaban sangat penting, karena siswa mengandalkan informasi yang kamu berikan untuk belajar dan memahami materi pelajaran. Oleh karena itu, pastikan untuk selalu memberikan jawaban yang benar dan akurat, dan jika kamu tidak yakin dengan suatu informasi, jangan ragu untuk mengatakan bahwa kamu perlu memeriksa kembali informasi tersebut untuk memberikan jawaban yang akurat. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan, jadi selalu pastikan jawaban kamu benar dan akurat untuk memastikan siswa mendapatkan informasi yang benar dan dapat dipercaya!
-Matematika, fisika, dan kimia adalah mata pelajaran yang sangat bergantung pada keakuratan dalam perhitungan dan penerapan rumus. Oleh karena itu, pastikan untuk selalu memberikan jawaban yang benar dan akurat pada mata pelajaran ini, dan jika kamu tidak yakin dengan suatu perhitungan atau penerapan rumus, jangan ragu untuk mengatakan bahwa kamu perlu memeriksa kembali informasi tersebut untuk memberikan jawaban yang akurat. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan, jadi selalu pastikan jawaban kamu benar dan akurat untuk memastikan siswa mendapatkan informasi yang benar dan dapat dipercaya!
-Rumus perhitungan kompleks dalam matematika, fisika, atau kimia harus dijelaskan dengan langkah-langkah yang jelas dan terperinci, sehingga siswa dapat mengikuti proses perhitungan dengan mudah dan memahami bagaimana rumus tersebut diterapkan. Jangan pernah melewatkan langkah dalam penjelasan, karena setiap langkah penting untuk memastikan siswa memahami konsep dan proses perhitungan dengan benar!
-Rumus pada mata pelajaran selain matematika, fisika, atau kimia juga harus dijelaskan dengan langkah-langkah yang jelas dan terperinci, sehingga siswa dapat mengikuti proses penjelasan dengan mudah dan memahami bagaimana rumus tersebut diterapkan dalam konteks mata pelajaran tersebut. Jangan pernah melewatkan langkah dalam penjelasan, karena setiap langkah penting untuk memastikan siswa memahami konsep dan proses dengan benar!
-Jangan melewatkan langkah dalam penjelasan, terutama pada mata pelajaran yang membutuhkan perhitungan atau penerapan rumus, karena setiap langkah penting untuk memastikan siswa memahami konsep dan proses dengan benar. Jika kamu melewatkan langkah dalam penjelasan, siswa mungkin akan kesulitan mengikuti proses perhitungan atau penerapan rumus dengan benar, sehingga dapat menyebabkan kebingungan dan kesalahan dalam pemahaman materi pelajaran. Oleh karena itu, pastikan untuk selalu memberikan penjelasan yang lengkap dan terperinci, terutama pada mata pelajaran yang membutuhkan perhitungan atau penerapan rumus, untuk memastikan siswa mendapatkan informasi yang benar dan akurat!
-Akurasi dalam perhitungan harus menjadi prioritas utama, terutama pada mata pelajaran yang membutuhkan perhitungan atau penerapan rumus, seperti matematika, fisika, atau kimia. Oleh karena itu, pastikan untuk selalu memberikan jawaban yang benar dan akurat pada mata pelajaran ini, dan jika kamu tidak yakin dengan suatu perhitungan atau penerapan rumus, jangan ragu untuk mengatakan bahwa kamu perlu memeriksa kembali informasi tersebut untuk memberikan jawaban yang akurat. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan, jadi selalu pastikan jawaban kamu benar dan akurat untuk memastikan siswa mendapatkan informasi yang benar dan dapat dipercaya!
-Jika error terjadi dalam perhitungan atau penerapan rumus, akui dengan jujur dan perbaiki dengan cepat untuk memastikan siswa mendapatkan informasi yang benar dan akurat. Jangan pernah mencoba menyembunyikan atau mengabaikan kesalahan tersebut, karena keakuratan adalah prioritas utama, terutama pada mata pelajaran yang membutuhkan perhitungan atau penerapan rumus, seperti matematika, fisika, atau kimia. Oleh karena itu, pastikan untuk selalu memberikan jawaban yang benar dan akurat pada mata pelajaran ini, dan jika kamu tidak yakin dengan suatu perhitungan atau penerapan rumus, jangan ragu untuk mengatakan bahwa kamu perlu memeriksa kembali informasi tersebut untuk memberikan jawaban yang akurat. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan, jadi selalu pastikan jawaban kamu benar dan akurat untuk memastikan siswa mendapatkan informasi yang benar dan dapat dipercaya!
-Tanggung jawab untuk memberikan jawaban yang akurat dan benar adalah hal yang sangat penting, terutama pada mata pelajaran yang membutuhkan perhitungan atau penerapan rumus, seperti matematika, fisika, atau kimia. Oleh karena itu, pastikan untuk selalu memberikan jawaban yang benar dan akurat pada mata pelajaran ini, dan jika kamu tidak yakin dengan suatu perhitungan atau penerapan rumus, jangan ragu untuk mengatakan bahwa kamu perlu memeriksa kembali informasi tersebut untuk memberikan jawaban yang akurat. Ingat, tujuan utama kamu adalah membantu siswa memahami materi dengan cara yang paling efektif dan menyenangkan, jadi selalu pastikan jawaban kamu benar dan akurat untuk memastikan siswa mendapatkan informasi yang benar dan dapat dipercaya!
-Buat token yang digunakan untuk menjawab harus diukur dengan cermat untuk memastikan bahwa jawaban yang diberikan tidak terlalu panjang atau terlalu pendek, sehingga dapat memberikan informasi yang cukup dan relevan untuk membantu siswa memahami materi pelajaran dengan baik. Jangan pernah memberikan jawaban yang terlalu panjang atau terlalu pendek, karena hal ini dapat menyebabkan kebingungan atau kurangnya informasi yang dibutuhkan untuk memahami materi pelajaran dengan benar. Oleh karena itu, pastikan untuk selalu memberikan jawaban yang tepat dan relevan, dengan memperhatikan jumlah token yang digunakan untuk menjawab, agar siswa mendapatkan informasi yang benar dan akurat untuk membantu mereka belajar dengan efektif!
-
-ATURAN AKURASI MUTLAK:
-1. MATEMATIKA: Hitung ulang setiap operasi sebelum menjawab. Tampilkan SEMUA langkah kerja. Satu kesalahan hitung = seluruh jawaban salah. Zero tolerance untuk error aritmatika.
-2. INFORMATIKA/CODING: Hanya tulis kode yang bisa DIJALANKAN. Test secara mental sebelum output. Semua sintaks harus benar 100%. Tidak ada placeholder atau kode setengah jadi.
-3. RUMUS FISIKA/KIMIA: Tulis rumus -> substitusi nilai -> hitung -> satuan. Jangan skip langkah.
-4. Jika tidak yakin dengan suatu fakta, katakan "Perlu diverifikasi dengan sumber resmi."
-
-KEAHLIAN MATA PELAJARAN:
-
-[IPS PEMINATAN - MASTER LEVEL]
-- GEOGRAFI: Geosfer (litosfer, atmosfer, hidrosfer, biosfer, antroposfer), peta & proyeksi, penginderaan jauh, SIG, interaksi keruangan, pembangunan wilayah, mitigasi bencana, interaksi desa-kota, negara maju & berkembang, lingkungan hidup.
-- SEJARAH PEMINATAN: Kehidupan awal manusia Indonesia, kerajaan Hindu-Buddha, kerajaan Islam, masa kolonialisme VOC/Belanda/Jepang, pergerakan nasional, kemerdekaan 1945, RIS, demokrasi parlementer, demokrasi terpimpin, Orde Baru 1966-1998, Reformasi 1998-kini, Perang Dunia I & II, Perang Dingin, sejarah peradaban dunia.
-- EKONOMI: Kebutuhan, kelangkaan, skala prioritas, sistem ekonomi, permintaan & penawaran, elastisitas, struktur pasar, teori produksi & biaya, perilaku konsumen & produsen, BUMN/BUMS/koperasi, manajemen, OJK, pasar modal, APBN & APBD, perpajakan, perdagangan internasional, neraca pembayaran, sistem moneter, inflasi, kebijakan fiskal & moneter, akuntansi dasar.
-- SOSIOLOGI: Interaksi sosial asosiatif/disosiatif, nilai & norma sosial, lembaga sosial, stratifikasi & mobilitas sosial, kelompok sosial, konflik & integrasi sosial, perubahan sosial, globalisasi & modernisasi, masyarakat multikultural, metode penelitian sosial kuantitatif & kualitatif.
-
-[MATA PELAJARAN WAJIB - MASTER LEVEL]
-- BAHASA INDONESIA: Teks narasi, deskripsi, prosedur, eksposisi, argumentasi, persuasi, laporan, resensi, editorial, artikel, cerpen, novel, puisi, drama, biografi, PUEBI, KBBI, majas, kalimat efektif, paragraf, kohesi & koherensi, unsur intrinsik & ekstrinsik karya sastra.
-- BAHASA INGGRIS: 16 tenses, conditionals, passive voice, reported speech, modal verbs, gerund & infinitive, relative clauses, conjunctions, vocabulary by topic, reading comprehension, narrative/descriptive/recount/analytical exposition/hortatory exposition writing, expressions, TOEFL/IELTS basic preparation.
-- MATEMATIKA UMUM & WAJIB:
-  Kelas 7: Bilangan bulat/pecahan/rasional, aljabar dasar, persamaan linear, himpunan, perbandingan, aritmatika sosial, geometri dasar, statistika dasar.
-  Kelas 8: SPLDV, fungsi, teorema Pythagoras, lingkaran, bangun ruang sisi datar, statistika & peluang lanjut.
-  Kelas 9: Bilangan berpangkat & bentuk akar, persamaan kuadrat, fungsi kuadrat, transformasi geometri, kesebangunan, bangun ruang sisi lengkung, statistika.
-  Kelas 10: Eksponen & logaritma, vektor, trigonometri, statistika, program linear, matriks.
-  Kelas 11: Fungsi komposisi & invers, limit fungsi, turunan, integral, barisan & deret, peluang lanjut.
-  Kelas 12: Integral lanjut, statistika inferensial, geometri analitik, persamaan lingkaran, irisan kerucut.
-- SEJARAH INDONESIA: Praaksara, Hindu-Buddha, Islam, kolonialisme, pergerakan nasional, BPUPKI & PPKI, proklamasi, perang kemerdekaan, mempertahankan NKRI, RIS, Orde Lama, Orde Baru, Reformasi.
-- PPKn: Pancasila, UUD 1945 dan pasal kunci, amandemen, sistem pemerintahan NKRI, otonomi daerah, demokrasi, HAM, bela negara, Bhinneka Tunggal Ika, wawasan nusantara.
-- PENDIDIKAN AGAMA & BUDI PEKERTI: Konsep umum agama di Indonesia: Islam, Kristen, Katolik, Hindu, Buddha, Konghucu.
-- SENI BUDAYA: Seni rupa nusantara & mancanegara, musik tradisional & modern, tari nusantara, teater, apresiasi seni.
-- PJOK: Atletik, senam, permainan bola, kesehatan reproduksi, gizi & kebugaran, pertolongan pertama, NAPZA.
-
-[INFORMATIKA - STRONG CODING]
-- Programming: Python, Java, C/C++, JavaScript, HTML & CSS.
-- Algoritma & Struktur Data: sorting, searching, array, linked list, stack, queue, tree, graph, kompleksitas Big-O.
-- Basis Data: SQL dasar, ERD, normalisasi.
-- Jaringan komputer: TCP/IP, protokol, keamanan dasar.`;
-
-/* ============================= Utilities ============================= */
-const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id-" + Date.now() + "-" + Math.random().toString(16).slice(2));
-const load = (key, fallback) => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } };
-const save = (key, val) => localStorage.setItem(key, JSON.stringify(val));
-const trimTitle = text => (text || "Chat baru").replace(/\s+/g," ").trim().slice(0,50) || "Chat baru";
-const fmtDate = iso => new Date(iso).toLocaleDateString("id-ID", {day:"2-digit", month:"short", year:"numeric"});
-const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-const currentModelId = settings => settings.modelType === "fast" ? settings.fastModel : settings.thinkingModel;
-const allModels = () => [...FAST_MODELS.map(m => ({...m,type:"fast"})), ...THINKING_MODELS.map(m => ({...m,type:"thinking"}))];
-const isVisionModel = id => FAST_MODELS.some(m => m.id === id && m.vision);
-function normalizeSettings(raw) {
-  const s = {...DEFAULT_SETTINGS, ...(raw || {})};
-  if (!FAST_MODELS.some(m => m.id === s.fastModel)) s.fastModel = FAST_MODELS[0].id;
-  if (!THINKING_MODELS.some(m => m.id === s.thinkingModel)) s.thinkingModel = THINKING_MODELS[0].id;
-  if (!["fast","thinking"].includes(s.modelType)) s.modelType = "fast";
-  return s;
-}
-function normalizeMemory(raw) {
-  const m = {...DEFAULT_MEMORY, ...(raw && typeof raw === "object" ? raw : {})};
-  m.strongSubjects = Array.isArray(m.strongSubjects) ? m.strongSubjects : [];
-  m.weakSubjects = Array.isArray(m.weakSubjects) ? m.weakSubjects : [];
-  m.importantNotes = Array.isArray(m.importantNotes) ? m.importantNotes : [];
-  return m;
-}
-function normalizeChats(raw) {
-  if (!Array.isArray(raw)) return [];
-  return raw.filter(Boolean).map(chat => ({
-    id: chat.id || uid(),
-    title: String(chat.title || "Chat baru"),
-    createdAt: chat.createdAt || new Date().toISOString(),
-    updatedAt: chat.updatedAt || chat.createdAt || new Date().toISOString(),
-    projectId: chat.projectId ?? null,
-    subject: chat.subject || "Matematika",
-    personality: chat.personality || "friendly",
-    model: chat.model || DEFAULT_SETTINGS.fastModel,
-    modelType: chat.modelType || "fast",
-    messages: Array.isArray(chat.messages) ? chat.messages.filter(Boolean).map(msg => ({
-      id: msg.id || uid(),
-      role: msg.role === "assistant" ? "assistant" : "user",
-      content: String(msg.content || ""),
-      timestamp: msg.timestamp || new Date().toISOString(),
-      files: Array.isArray(msg.files) ? msg.files.filter(Boolean) : [],
-      thinkingContent: msg.thinkingContent || null,
-      tokenUsage: msg.tokenUsage || null
-    })) : []
-  }));
-}
-function normalizeProjects(raw) {
-  if (!Array.isArray(raw)) return [];
-  return raw.filter(Boolean).map(p => ({
-    id: p.id || uid(),
-    name: String(p.name || "Project"),
-    description: String(p.description || ""),
-    customInstructions: String(p.customInstructions || ""),
-    createdAt: p.createdAt || new Date().toISOString(),
-    chats: Array.isArray(p.chats) ? p.chats : []
-  }));
-}
-function apiHeaders(type, key) {
-  const headers = {"Authorization":`Bearer ${key}`, "Content-Type":"application/json"};
-  if (type === "thinking") {
-    headers["HTTP-Referer"] = location.origin || "https://github.io";
-    headers["X-Title"] = "VT AI";
-  }
-  return headers;
-}
-async function readApiError(res) {
-  try {
-    const data = await res.clone().json();
-    return data?.error?.message || data?.message || JSON.stringify(data).slice(0, 240);
-  } catch {
-    try { return (await res.text()).slice(0, 240); } catch { return ""; }
-  }
-}
-const sanitize = str => String(str || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const excerpt = (text, q) => {
-  const s = (text || "").replace(/\s+/g," ");
-  const i = s.toLowerCase().indexOf(q.toLowerCase());
-  if (i < 0) return s.slice(0,90);
-  return (i > 24 ? "..." : "") + s.slice(Math.max(0, i-24), i+90) + (i+90 < s.length ? "..." : "");
-};
-const highlight = (text, q) => !q ? sanitize(text) : sanitize(text).replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "ig"), "<mark>$1</mark>");
-
-/* ============================= Markdown + Math ============================= */
-function renderMarkdown(md) {
-  if (!window.marked) return sanitize(md);
-  let src = String(md || "");
-  const blocks = [];
-  src = src.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
-    const token = `@@MATH_BLOCK_${blocks.length}@@`;
-    blocks.push(() => katex.renderToString(math.trim(), {displayMode:true, throwOnError:false}));
-    return token;
-  }).replace(/\$([^$\n]+?)\$/g, (_, math) => {
-    const token = `@@MATH_BLOCK_${blocks.length}@@`;
-    blocks.push(() => katex.renderToString(math.trim(), {displayMode:false, throwOnError:false}));
-    return token;
-  });
-  marked.setOptions({
-    gfm: true,
-    breaks: true,
-    highlight: (code, lang) => {
-      try { return lang && hljs.getLanguage(lang) ? hljs.highlight(code, {language: lang}).value : hljs.highlightAuto(code).value; }
-      catch { return sanitize(code); }
-    }
-  });
-  let html = marked.parse(src);
-  blocks.forEach((fn, i) => { html = html.replace(`@@MATH_BLOCK_${i}@@`, fn()); });
-  return html;
-}
-function splitThinking(text) {
-  const match = String(text || "").match(/<think>([\s\S]*?)<\/think>/i);
-  if (!match) return {thinking:"", answer:text || ""};
-  return {thinking:match[1].trim(), answer:String(text).replace(match[0],"").trim()};
-}
-
-/* ============================= File Processing ============================= */
-async function readFileAsDataURL(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
-async function readFileAsText(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsText(file); }); }
-async function readFileAsArrayBuffer(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsArrayBuffer(file); }); }
-async function processFile(file) {
-  if (file.size > 10 * 1024 * 1024) throw new Error(`${file.name} melebihi 10MB`);
-  const ext = file.name.split(".").pop().toLowerCase();
-  if (["png","jpg","jpeg"].includes(ext)) return {name:file.name, type:"image", mime:file.type, content:await readFileAsDataURL(file)};
-  if (ext === "pdf") {
-    const buf = await readFileAsArrayBuffer(file);
-    const pdf = await pdfjsLib.getDocument({data:buf}).promise;
-    let text = "";
-    for (let p=1; p<=pdf.numPages; p++) {
-      const page = await pdf.getPage(p);
-      const content = await page.getTextContent();
-      text += `\n\n--- Halaman ${p} ---\n` + content.items.map(i => i.str).join(" ");
-    }
-    return {name:file.name, type:"text", content:text.slice(0,60000)};
-  }
-  if (ext === "docx") {
-    const result = await mammoth.extractRawText({arrayBuffer:await readFileAsArrayBuffer(file)});
-    return {name:file.name, type:"text", content:result.value.slice(0,60000)};
-  }
-  if (["xlsx","xlsm"].includes(ext)) {
-    const wb = XLSX.read(await readFileAsArrayBuffer(file), {type:"array"});
-    const data = wb.SheetNames.map(n => ({sheet:n, rows:XLSX.utils.sheet_to_json(wb.Sheets[n], {defval:""})}));
-    return {name:file.name, type:"text", content:JSON.stringify(data, null, 2).slice(0,60000)};
-  }
-  if (ext === "zip") {
-    const zip = await JSZip.loadAsync(await readFileAsArrayBuffer(file));
-    let out = "Isi ZIP:\n" + Object.keys(zip.files).join("\n");
-    const readable = /\.(txt|md|csv|json|py|js|ts|html|css|cpp|c|h|java|php)$/i;
-    for (const [name, entry] of Object.entries(zip.files).slice(0,40)) {
-      if (!entry.dir && readable.test(name)) out += `\n\n[FILE: ${name}]\n` + (await entry.async("string")).slice(0,12000);
-    }
-    return {name:file.name, type:"text", content:out.slice(0,70000)};
-  }
-  return {name:file.name, type:"text", content:(await readFileAsText(file)).slice(0,60000)};
-}
-function filesToPrompt(files) {
-  return (Array.isArray(files) ? files : []).filter(f => f && f.type !== "image").map(f => `\n\n[FILE: ${f.name}]\n\`\`\`\n${f.content}\n\`\`\`\n`).join("");
-}
-
-/* MODULE 2: TOKEN EFFICIENCY */
-const estimateTokens = (text) => Math.ceil(String(text || "").length / 4);
-const MODEL_CONTEXT = {
-  "llama-3.3-70b-versatile": 32768,
-  "llama-3.1-8b-instant": 8192,
-  "meta-llama/llama-4-scout-17b-16e-instruct": 8192,
-  "openrouter/free": 8192,
-  "deepseek/deepseek-v4-flash:free": 65536,
-  "arcee-ai/trinity-large-thinking:free": 32768,
-  "nousresearch/hermes-3-llama-3.1-405b:free": 32768,
-  "google/gemma-4-26b-a4b-it:free": 32768,
-};
-const SYSTEM_RESERVE = 3200;
-const RESPONSE_RESERVE = 2048;
-function smartSliceMessages(messages, modelId) {
-  const budget = Math.max(1200, (MODEL_CONTEXT[modelId] || 8192) - SYSTEM_RESERVE - RESPONSE_RESERVE);
-  let used = 0;
-  const result = [];
-  const clean = (Array.isArray(messages) ? messages : []).filter(m => m && !(m.role === "assistant" && !String(m.content || "").trim()));
-  const first = clean[0];
-  const reversed = [...clean].reverse();
-  for (const msg of reversed) {
-    if (first && msg.id === first.id && result.some(m => m.id === first.id)) continue;
-    const fileText = (msg.files || []).map(f => f.type === "text" ? f.content : "").join("");
-    const cost = estimateTokens(msg.content) + estimateTokens(fileText) + 8;
-    if (used + cost > budget && result.length > 0) break;
-    used += cost;
-    result.unshift(msg);
-  }
-  if (first && !result.some(m => m.id === first.id) && result.length > 0) {
-    const firstCost = estimateTokens(first.content) + 8;
-    if (used + firstCost <= budget) result.unshift(first);
-  }
-  return { messages: result, estimatedTokens: used };
-}
-
-/* ============================= Components ============================= */
-function Icon({name, size=16, className=""}) {
-  const icons = {plus:"+", search:"⌕", trash:"🗑", settings:"⚙", sun:"☀", moon:"☾", menu:"≡", send:"➤", attach:"📎", chevron:"▾", copy:"📋", regen:"🔄", up:"👍", down:"👎", book:"📚", close:"×"};
-  return <span className={className} style={{fontSize:size, lineHeight:1}}>{icons[name] || name}</span>;
-}
-function Toasts({toasts, onClose}) {
-  const [exiting, setExiting] = useState({});
-  useEffect(() => {
-    const timers = toasts.map(t => setTimeout(() => {
-      setExiting(e => ({...e, [t.id]: true}));
-      setTimeout(() => onClose(t.id), 180);
-    }, 4820));
-    return () => timers.forEach(clearTimeout);
-  }, [toasts]);
-  const handleClose = (id) => {
-    setExiting(e => ({...e, [id]: true}));
-    setTimeout(() => onClose(id), 180);
-  };
-  return <div className="fixed top-4 right-4 z-[80] space-y-2 w-[340px] max-w-[calc(100vw-24px)]">
-    {toasts.map(t => <div key={t.id} className={`toast surface border rounded-xl p-3 text-sm flex gap-3 items-start ${exiting[t.id] ? "toast-exit" : "toast-enter"}`}>
-      <div>{t.kind === "success" ? "✅" : t.kind === "warn" ? "⚠️" : "❌"}</div>
-      <div className="flex-1 text-primary">{t.message}{t.action && <button onClick={t.action.onClick} className="ml-2 underline accent">{t.action.label}</button>}</div>
-      <button className="text-muted" onClick={() => handleClose(t.id)}>×</button>
-    </div>)}
-  </div>;
-}
-function Collapsible({title, children, defaultOpen=true, right}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return <section className="mt-4">
-    <button className="w-full flex items-center justify-between text-[11px] font-bold tracking-widest text-muted uppercase px-2 py-1" onClick={() => setOpen(!open)}>
-      <span>{open ? "▼" : "▶"} {title}</span>{right}
-    </button>
-    {open && <div className="mt-1">{children}</div>}
-  </section>;
-}
-function ChatRow({chat, active, onOpen, onDelete, q}) {
-  return <div id={`chat-row-${chat.id}`} onClick={onOpen} className={`group cursor-pointer rounded-lg px-2 py-2 flex items-center gap-2 hoverable ${active ? "elevated" : ""}`}>
-    <div className="flex-1 min-w-0">
-      <div className="truncate text-primary text-[13px]" dangerouslySetInnerHTML={{__html:highlight(chat.title, q)}} />
-      <div className="text-[11px] text-muted">{fmtDate(chat.updatedAt)} · {chat.subject || "Umum"}</div>
-    </div>
-    <button onClick={(e) => {e.stopPropagation(); onDelete();}} className="opacity-0 group-hover:opacity-100 text-muted hover:text-red-400"><Icon name="trash" /></button>
-  </div>;
-}
-function Sidebar({open, setOpen, chats, projects, activeId, onNew, onOpen, onDeleteChat, onSettings, onNewProject, onDeleteProject, theme, toggleTheme, search, setSearch, results, onResult}) {
-  const recent = [...chats].sort((a,b) => new Date(b.updatedAt)-new Date(a.updatedAt)).slice(0,8);
-  return <aside className={`sidebar h-full flex flex-col scrollbar ${open ? "open" : ""}`}>
-    <div className="p-3 flex items-center justify-between border-b" style={{borderColor:"var(--border)"}}>
-      <div className="flex items-center gap-2 font-bold text-base"><div className="brand-logo sidebar-brand-logo w-8 h-8 rounded-lg"><img src="vt-ai-logo.png" alt="VT AI" /></div> VT AI</div>
-      <button className="w-8 h-8 rounded-lg hoverable" onClick={toggleTheme}><Icon name={theme === "light" ? "moon" : "sun"} /></button>
-    </div>
-    <div className="p-3 border-b" style={{borderColor:"var(--border)"}}>
-      <button onClick={() => {onNew(); setOpen(false);}} className="btn-primary rounded-xl w-full py-2.5 font-semibold flex items-center justify-center gap-2"><Icon name="plus" /> New Chat</button>
-      <div className="mt-3 elevated rounded-xl px-3 py-2 flex items-center gap-2 border">
-        <Icon name="search" className="text-muted" />
-        <input id="sidebar-search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search chats..." className="bg-transparent outline-none w-full text-primary placeholder:text-muted" />
-      </div>
-    </div>
-    <div className="flex-1 overflow-y-auto scrollbar p-3">
-      {search.trim() && <Collapsible title="Search Results">
-        <div className="space-y-1">{results.length ? results.map(r => <button key={r.chat.id+r.messageId} onClick={() => onResult(r)} className="w-full text-left rounded-lg p-2 hoverable">
-          <div className="text-primary font-medium">📝 <span dangerouslySetInnerHTML={{__html:highlight(r.chat.title, search)}} /></div>
-          <div className="text-xs text-secondary mt-1" dangerouslySetInnerHTML={{__html:highlight(`"...${r.context}..."`, search)}} />
-          <div className="text-[11px] text-muted mt-1">{fmtDate(r.chat.updatedAt)} · {r.chat.subject}</div>
-        </button>) : <div className="text-muted p-2">Tidak ada hasil.</div>}</div>
-      </Collapsible>}
-      <Collapsible title="Recents">
-        <div className="space-y-1">{recent.length ? recent.map(c => <ChatRow key={c.id} chat={c} active={activeId===c.id} onOpen={() => onOpen(c.id)} onDelete={() => onDeleteChat(c.id)} q={search}/>) : <SkeletonList />}</div>
-      </Collapsible>
-      <Collapsible title="Projects" right={<button onClick={(e)=>{e.stopPropagation(); onNewProject();}} className="accent normal-case tracking-normal">+ New</button>}>
-        <div className="space-y-1">
-          {projects.map(p => <div key={p.id} className="group rounded-lg px-2 py-2 hoverable flex items-center gap-2">
-            <span>📁</span><div className="flex-1 truncate">{p.name}</div>
-            <button onClick={() => onDeleteProject(p.id)} className="opacity-0 group-hover:opacity-100 text-muted"><Icon name="trash" /></button>
-          </div>)}
-          <button onClick={onNewProject} className="w-full rounded-lg px-2 py-2 text-left accent hoverable">+ New Project</button>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Windows RDP untuk bot WhatsApp, n8n dan AI agent. Mulai Rp5.000. Beli dan kelola Driccloud langsung lewat Telegram."
+    />
+    <meta name="theme-color" content="#07090e" />
+    <title>Driccloud — Bot jalan. Kamu bebas.</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="navigation">
+      <a class="brand" href="#top" aria-label="Driccloud beranda"
+        ><svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path
+            d="M8 25a7 7 0 0 1-1-14 10 10 0 0 1 19-1 7.5 7.5 0 0 1-1 15H8Z"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="m11 18 4 4 7-9"
+            stroke="currentColor"
+            stroke-width="2"
+          /></svg
+        >dric<span>cloud.</span></a
+      >
+      <nav aria-label="Navigasi utama">
+        <a href="#fitur">Kenapa Driccloud</a><a href="#stack">Tech stack</a
+        ><a href="#harga">Harga</a><a href="#faq">FAQ</a>
+      </nav>
+      <a
+        class="button small"
+        href="https://t.me/DriccloudBot?start=order_dric-trial"
+        >Buka Telegram <span aria-hidden="true">↗</span></a
+      >
+    </header>
+    <main id="top">
+      <section class="hero wrap">
+        <div class="hero-copy">
+          <p class="eyebrow">
+            <span class="dot"></span> YOUR NEXT ALWAYS-ON WORKSPACE
+          </p>
+          <h1>Bot jalan.<br />Kamu <span class="gradient">bebas.</span></h1>
+          <p class="hero-text">
+            Hosting bot WA, n8n &amp; Agentic AI di Windows RDP. Mulai
+            <strong>Rp5.000</strong>. Beli, konek, dan kendalikan servermu
+            langsung dari Telegram.
+          </p>
+          <div class="hero-actions">
+            <a
+              class="button"
+              href="https://t.me/DriccloudBot?start=order_dric-trial"
+              >Coba Dric Trial <span>↗</span></a
+            ><a
+              class="button secondary"
+              href="https://t.me/DriccloudBot?start=order_dric-agentic"
+              >Pilih Dric Agentic <span>→</span></a
+            >
+          </div>
+          <p class="technical note">
+            WINDOWS TERISOLASI <span>✦</span> NODE JAKARTA <span>✦</span> 9 PORT
+            APLIKASI
+          </p>
+          <div class="hero-stat">
+            <div><strong>Rp5rb</strong><span>untuk mulai eksplorasi</span></div>
+            <div>
+              <strong>24/7</strong><span>workspace tetap menyala*</span>
+            </div>
+            <div>
+              <strong>Telegram</strong><span>satu tempat untuk kontrol</span>
+            </div>
+          </div>
         </div>
-      </Collapsible>
-      <Collapsible title="All Chats">
-        <div className="space-y-1 pb-6">{chats.map(c => <ChatRow key={c.id} chat={c} active={activeId===c.id} onOpen={() => onOpen(c.id)} onDelete={() => onDeleteChat(c.id)} q={search}/>)}</div>
-      </Collapsible>
-    </div>
-    <div className="p-3 border-t" style={{borderColor:"var(--border)"}}>
-      <button onClick={onSettings} className="w-full rounded-xl py-2 hoverable flex items-center justify-center gap-2"><Icon name="settings" /> Settings</button>
-    </div>
-  </aside>;
-}
-function SkeletonList() {
-  return <div className="space-y-2 p-2"><div className="h-9 rounded-lg skeleton"></div><div className="h-9 rounded-lg skeleton w-10/12"></div><div className="h-9 rounded-lg skeleton w-8/12"></div></div>;
-}
-function Welcome({onSubject, hasKey}) {
-  return <div className="welcome-mobile h-full grid place-items-center px-5">
-    <div className="text-center w-full max-w-5xl min-w-0">
-      <div className="brand-logo desktop-welcome-logo mx-auto w-24 h-24 rounded-[28px]"><img src="vt-ai-logo.png" alt="VT AI" /></div>
-      <h1 className="text-3xl md:text-5xl font-bold mt-6 leading-tight px-2">Selamat datang di VT AI</h1>
-      <p className="text-secondary mt-3 text-lg">Virtual Teacher.AI untuk pelajar Indonesia</p>
-      {!hasKey && <p className="setup-reminder mt-4 text-sm text-amber-500">API Key belum diatur. Isi embedded key pool di source atau buka Settings untuk key manual.</p>}
-      <div className="welcome-subject-pills mt-8 flex flex-wrap justify-center gap-2 w-full overflow-hidden">
-        {SUBJECTS.slice(0,8).map((s, i) => <button key={s} onClick={() => onSubject(s)} className="elevated border rounded-full px-4 py-2 hoverable" style={{animation:`pillEnter 0.36s cubic-bezier(0.34,1.56,0.64,1) ${i * 55}ms both`}}>{s}</button>)}
-      </div>
-    </div>
-  </div>;
-}
-function Message({msg, onCopy, onRegenerate, searchTerm}) {
-  const {thinking, answer} = splitThinking(msg.content);
-  const [openThink, setOpenThink] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const bodyRef = useRef(null);
-  useEffect(() => {
-    if (!bodyRef.current) return;
-    bodyRef.current.querySelectorAll("pre").forEach(pre => {
-      pre.querySelectorAll("code").forEach(code => {
-        if (!code.dataset.highlighted && window.hljs) hljs.highlightElement(code);
-      });
-      if (pre.querySelector(".copy-code")) return;
-      const btn = document.createElement("button");
-      btn.className = "copy-code";
-      btn.textContent = "Copy";
-      btn.onclick = async () => {
-        await navigator.clipboard.writeText(pre.innerText.replace(/^Copy/, ""));
-        btn.textContent = "✓ Copied!";
-        setTimeout(() => btn.textContent = "Copy", 2000);
-      };
-      pre.appendChild(btn);
-    });
-  }, [answer]);
-  if (msg.role === "user") return <div id={`msg-${msg.id}`} className="flex justify-end msg-enter">
-    <div className="user-bubble px-4 py-3 chat-body">
-      {msg.files?.length > 0 && <div className="mb-2 flex flex-wrap gap-1">{msg.files.map(f => <span key={f.name} className="text-xs elevated border rounded-full px-2 py-1">{f.type==="image"?"🖼️":"📄"} {f.name}</span>)}</div>}
-      <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{__html: searchTerm ? highlight(msg.content, searchTerm) : sanitize(msg.content)}} />
-    </div>
-  </div>;
-  return <div id={`msg-${msg.id}`} className="group ai-message flex gap-3 w-full msg-enter">
-    <div className="w-8 h-8 rounded-full btn-primary grid place-items-center font-bold shrink-0">VT</div>
-    <div className="flex-1 min-w-0">
-      {(thinking || msg.thinkingContent) && <div className="mb-3">
-        <button onClick={() => setOpenThink(!openThink)} className="text-sm accent hover:underline flex items-center gap-1">
-          💭 Proses Berpikir AI
-          <span style={{display:"inline-block", transform: openThink ? "rotate(180deg)" : "rotate(0deg)", transition:"transform 0.22s ease"}}>▾</span>
-        </button>
-        <div className={`thinking-content thinking-box mt-2 rounded-r-xl p-3 italic text-[13px] whitespace-pre-wrap ${openThink ? "open" : ""}`}>{thinking || msg.thinkingContent}</div>
-      </div>}
-      <div ref={bodyRef} className="prose-cerdas chat-body" dangerouslySetInnerHTML={{__html: renderMarkdown(searchTerm ? answer.replace(new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "ig"), "==$1==") : answer)}} />
-      {msg.tokenUsage && <div className="text-xs text-muted mt-2">Tokens: {msg.tokenUsage.prompt || 0} prompt + {msg.tokenUsage.completion || 0} completion</div>}
-      <div className="opacity-0 group-hover:opacity-100 transition flex gap-1 mt-2 text-xs">
-        <button onClick={() => { onCopy(msg); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="elevated border rounded-lg px-2 py-1 hoverable" style={{transition:"all 0.18s ease"}}>{copied ? "✓ Copied!" : "📋 Copy"}</button>
-        <button onClick={() => onRegenerate(msg)} className="elevated border rounded-lg px-2 py-1 hoverable"><Icon name="regen" /> Regenerate</button>
-        <button className="elevated border rounded-lg px-2 py-1 hoverable"><Icon name="up" /></button>
-        <button className="elevated border rounded-lg px-2 py-1 hoverable"><Icon name="down" /></button>
-      </div>
-    </div>
-  </div>;
-}
-function Typing({thinking}) {
-  return <div className="flex gap-3">
-    <div className="w-8 h-8 rounded-full btn-primary grid place-items-center font-bold">VT</div>
-    <div className="elevated border rounded-2xl px-4 py-3 text-secondary">
-      {thinking ? "🧠 Sedang berpikir mendalam..." : "VT AI sedang mengetik"} <span className="inline-flex gap-1 ml-1"><span className="dot">•</span><span className="dot">•</span><span className="dot">•</span></span>
-    </div>
-  </div>;
-}
-function getModelOption(settings) {
-  const id = currentModelId(settings);
-  return allModels().find(m => m.id === id) || allModels()[0];
-}
-function PremiumDropdown({value, groups, onChange, compact=false, direction="up", className=""}) {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef(null);
-  useEffect(() => {
-    const close = e => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, []);
-  const flat = groups.flatMap(g => g.options.map(o => ({...o, group:g.label})));
-  const selected = flat.find(o => o.value === value) || flat[0];
-  const menuPos = direction === "down" ? "top-full mt-2" : "bottom-full mb-2";
-  return <div ref={wrapRef} className={`relative ${className}`}>
-    <button type="button" onClick={() => setOpen(!open)} className={`h-11 w-full rounded-xl border px-3 flex items-center justify-between gap-3 hoverable transition ${compact ? "min-w-[190px]" : "min-w-[240px]"}`} style={{borderColor:"var(--border)", background:"rgba(255,255,255,.025)"}}>
-      <span className="truncate text-sm font-semibold">{selected?.label}</span>
-      <span className="text-muted">▾</span>
-    </button>
-    {open && <div className={`custom-menu absolute ${menuPos} right-0 z-[90] w-[min(360px,calc(100vw-24px))] rounded-2xl p-2 max-h-[360px] overflow-y-auto scrollbar`}>
-      {groups.map(group => <div key={group.label} className="py-1">
-        <div className="px-3 py-1.5 text-[11px] uppercase tracking-widest text-muted font-bold">{group.label}</div>
-        {group.options.map(opt => <button key={opt.value} type="button" onClick={() => {onChange(opt.value); setOpen(false);}} className={`w-full rounded-xl px-3 py-2.5 text-left flex items-center justify-between gap-3 ${opt.value === value ? "btn-primary" : "hoverable"}`}>
-          <span className="truncate text-sm font-semibold">{opt.label}</span>
-          {opt.note && <span className={`text-[11px] ${opt.value === value ? "text-white/80" : "text-muted"}`}>{opt.note}</span>}
-        </button>)}
-      </div>)}
-    </div>}
-  </div>;
-}
-function SubjectDropdown({subject, setSubject, className=""}) {
-  return <PremiumDropdown value={subject} className={className} compact groups={[{label:"Mata Pelajaran", options:SUBJECTS.map(s => ({value:s, label:s}))}]} onChange={setSubject} />;
-}
-function ModelDropdown({settings, setSettings, direction="up", className=""}) {
-  const value = settings.modelType + "|" + currentModelId(settings);
-  const groups = [
-    {label:"Fast - Groq", options:FAST_MODELS.map(m => ({value:`fast|${m.id}`, label:m.name, note:m.badges.join(" · ")}))},
-    {label:"Thinking - OpenRouter", options:THINKING_MODELS.map(m => ({value:`thinking|${m.id}`, label:m.name, note:m.badges.join(" · ")}))}
-  ];
-  return <PremiumDropdown value={value} groups={groups} direction={direction} className={className} onChange={v => {
-    const [type,id] = v.split("|");
-    setSettings({...settings, modelType:type, [type==="fast" ? "fastModel" : "thinkingModel"]:id});
-  }} />;
-}
-/* KEY POOL MODULE */
-function maskKey(key) {
-  if (!key) return "";
-  return key.slice(0, 8) + "••••••••" + key.slice(-4);
-}
-function KeyStatusPill() {
-  const g = groqPool.summary;
-  const o = orPool.summary;
-  const total = g.total + o.total;
-  const active = g.active + o.active;
-  const color = active === 0 ? "var(--danger)" : active < total ? "var(--warning)" : "var(--success)";
-  return <div className="hidden md:flex items-center gap-1 text-[11px] elevated border rounded-full px-2 py-1" title={`Groq: ${g.active}/${g.total} · OpenRouter: ${o.active}/${o.total}`}>
-    <span style={{color}}>●</span>
-    <span className="text-secondary">{active}/{total} keys</span>
-  </div>;
-}
-function TokenBudgetBar({ settings, chat }) {
-  const modelId = currentModelId(settings);
-  const total = MODEL_CONTEXT[modelId] || 8192;
-  const { estimatedTokens } = smartSliceMessages((chat?.messages || []), modelId);
-  const used = estimatedTokens + SYSTEM_RESERVE;
-  const pct = Math.min(100, Math.round((used / total) * 100));
-  const color = pct > 80 ? "var(--danger)" : pct > 55 ? "var(--warning)" : "var(--success)";
-  return <div className="token-budget flex items-center gap-2 text-[11px] text-muted px-2">
-    <div className="w-20 h-1.5 rounded-full" style={{background:"var(--border)"}}>
-      <div className="h-full rounded-full transition-all" style={{width:`${pct}%`, background:color}} />
-    </div>
-    <span style={{color}}>{used.toLocaleString()}/{total.toLocaleString()} token</span>
-  </div>;
-}
-function InputBar({value, setValue, onSend, loading, files, setFiles, onFiles, subject, setSubject, settings, setSettings, activeChat, abortRef}) {
-  const fileRef = useRef(null);
-  return <div className="input-area border-t p-4" style={{borderColor:"var(--border)", background:"linear-gradient(180deg, transparent, rgba(0,0,0,.20))"}}>
-    {files.length > 0 && <div className="file-row max-w-5xl mx-auto mb-2 flex gap-2 flex-wrap">
-      {files.map((f,i) => <div key={f.name+i} className="relative group chip-enter elevated border rounded-full px-3 py-1.5 text-xs flex items-center gap-2">
-        <span>{f.type==="image"?"🖼️":"📄"} {f.name}</span>
-        {f.type==="image" && <img src={f.content} className="hidden group-hover:block absolute bottom-9 left-0 w-20 h-20 object-cover rounded-lg border z-20" />}
-        <button onClick={() => setFiles(files.filter((_,x)=>x!==i))}>×</button>
-      </div>)}
-    </div>}
-    <div className="max-w-5xl w-full mx-auto composer rounded-3xl p-3">
-      <input ref={fileRef} type="file" className="hidden" multiple accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx,.xlsm,.py,.js,.ts,.html,.css,.cpp,.c,.h,.java,.php,.zip,.txt,.md,.csv,.json" onChange={e => onFiles([...e.target.files])} />
-      <textarea value={value} onChange={e => setValue(e.target.value)} onKeyDown={e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); onSend(); } }} placeholder="Tanyakan VT AI..." rows={2} className="w-full bg-transparent outline-none resize-none overflow-hidden max-h-44 px-2 pt-1 pb-3 text-[15px] leading-7 placeholder:text-muted" />
-      <div className="composer-footer flex items-center gap-2 pt-2 border-t flex-wrap" style={{borderColor:"var(--border)"}}>
-        <button className="attach-btn h-11 w-11 rounded-xl hoverable border shrink-0" style={{borderColor:"var(--border)"}} onClick={() => fileRef.current.click()} title="Attach file"><Icon name="attach" /></button>
-        <div className="mobile-subject-wrap w-full sm:w-[210px]"><SubjectDropdown subject={subject} setSubject={setSubject} /></div>
-        <div className="mobile-model-wrap w-full lg:w-[330px] sm:flex-1 lg:flex-none"><ModelDropdown settings={settings} setSettings={setSettings} /></div>
-        <div className="composer-hint flex-1 hidden 2xl:block text-xs text-muted px-2">Enter untuk kirim · Shift+Enter baris baru</div>
-        <TokenBudgetBar settings={settings} chat={activeChat} />
-        {loading
-          ? <button onClick={() => abortRef.current?.abort()} className="stop-btn rounded-xl h-11 px-5 font-semibold bg-red-500 hover:bg-red-600 text-white ml-auto shrink-0"><span className="send-icon">⏹</span><span className="send-label ml-1">Stop</span></button>
-          : <button disabled={!value.trim() && !files.length} onClick={onSend} className="send-btn btn-primary ripple-btn disabled:opacity-40 rounded-xl h-11 px-5 font-semibold ml-auto shrink-0"><span className="send-icon"><Icon name="send" /></span><span className="send-label ml-1">Send</span></button>}
-      </div>
-    </div>
-  </div>;
-}
-function SettingsModal({open, onClose, settings, setSettings, memory, setMemory, toast, onPoolChange}) {
-  const [wipeText, setWipeText] = useState("");
-  const [, forceTick] = useState(0);
-  const forceUpdate = () => { forceTick(x => x + 1); onPoolChange?.(); };
-  if (!open) return null;
-  const saveKeys = () => { toast("success","Settings tersimpan."); };
-  return <div className="fixed inset-0 z-[70] bg-black/60 grid place-items-center p-4" onMouseDown={onClose}>
-    <div className="modal-enter surface border rounded-2xl w-[600px] max-w-full max-h-[92vh] overflow-y-auto scrollbar p-5" onMouseDown={e => e.stopPropagation()}>
-      <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold">Settings</h2><button onClick={onClose} className="text-2xl text-muted">×</button></div>
-      <Section title="🔑 API Keys — Key Pool">
-        {[
-          { label: "Groq (Fast)", pool: groqPool },
-          { label: "OpenRouter (Thinking)", pool: orPool },
-        ].map(({label, pool}) => {
-          const s = pool.summary;
-          return <div key={label} className="elevated border rounded-xl p-3 space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <span className="font-semibold text-sm">{label}</span>
-              <div className="flex gap-1.5 text-[11px] flex-wrap justify-end">
-                <span className="rounded-full px-2 py-0.5" style={{background:"rgba(34,197,94,.15)", color:"var(--success)"}}>✅ {s.active} aktif</span>
-                {s.cooling > 0 && <span className="rounded-full px-2 py-0.5" style={{background:"rgba(245,158,11,.15)", color:"var(--warning)"}}>⏳ {s.cooling} cooldown</span>}
-                {s.dead > 0 && <span className="rounded-full px-2 py-0.5" style={{background:"rgba(239,68,68,.15)", color:"var(--danger)"}}>❌ {s.dead} mati</span>}
+        <div class="panel-scene">
+          <div class="orbit"></div>
+          <div class="telegram-panel">
+            <div class="panel-top">
+              <div class="cloud-avatar">☁</div>
+              <div>
+                <strong>Driccloud</strong><small>CONTOH PANEL TELEGRAM</small>
               </div>
+              <span class="online-dot"></span>
             </div>
-            <div className="space-y-1.5">
-              {pool.entries.length ? pool.entries.map((e, i) => {
-                const embedded = pool._embeddedKeys().includes(e.key);
-                const statusColor = {active:"var(--success)", cooling:"var(--warning)", dead:"var(--danger)"}[e.status];
-                return <div key={e.key+i} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs" style={{background:"var(--bg-hover)"}}>
-                  <span style={{color:statusColor}}>{e.status === "active" ? "●" : e.status === "cooling" ? "◑" : "○"}</span>
-                  <span className="mono flex-1 text-secondary truncate">{maskKey(e.key)}</span>
-                  {embedded && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{background:"var(--accent-soft)", color:"var(--accent)"}}>embedded</span>}
-                  <span className="text-muted">{e.hits} hits</span>
-                  {!embedded && <button onClick={() => { pool.removeKey(e.key); forceUpdate(); }} className="text-muted hover:text-red-400 ml-1">×</button>}
-                </div>;
-              }) : <div className="text-xs text-muted rounded-lg px-2 py-2" style={{background:"var(--bg-hover)"}}>Belum ada key. Isi EMBEDDED_*_KEYS di source atau tambah manual di bawah.</div>}
+            <div class="chat">
+              <span class="code">// YOUR WINDOWS WORKSPACE</span>
+              <h2>Halo, builder 👋</h2>
+              <p>Semua automasi. Satu workspace.</p>
+              <div class="instance">
+                <div>
+                  <span class="mini-icon">▧</span> dric-vm-101
+                  <span class="badge">RUNNING</span>
+                </div>
+                <dl>
+                  <dt>WORKSPACE</dt>
+                  <dd>Dric Agentic</dd>
+                  <dt>REGION</dt>
+                  <dd>Jakarta, Indonesia</dd>
+                  <dt>ACCESS</dt>
+                  <dd>Windows Remote Desktop</dd>
+                </dl>
+                <div class="terminal">
+                  <span class="dim">PS C:\bots&gt;</span> pm2 status<br /><span
+                    class="cyan"
+                    >●</span
+                  >
+                  whatsapp-bot <span class="dim">online</span><br /><span
+                    class="cyan"
+                    >●</span
+                  >
+                  n8n-workflows <span class="dim">online</span><br /><span
+                    class="cyan"
+                    >●</span
+                  >
+                  ai-research-agent <span class="dim">online</span>
+                </div>
+              </div>
+              <div class="bot-buttons">
+                <span>▶ Start</span><span>■ Stop</span><span>↻ Restart</span
+                ><span class="full">↓ Download shortcut .rdp</span>
+              </div>
+              <p class="example-label">
+                Ilustrasi panel, bukan status server live.
+              </p>
             </div>
-            {pool.entries.length < 10 && <div className="flex gap-2">
-              <input type="password" placeholder={`Tambah ${label} key...`} id={`add-key-${pool.type}`} className="flex-1 elevated border rounded-lg px-3 py-2 text-sm outline-none text-primary placeholder:text-muted" />
-              <button onClick={() => {
-                const input = document.getElementById(`add-key-${pool.type}`);
-                const added = pool.addKey(input.value);
-                if (added) { input.value = ""; toast("success","Key ditambahkan."); forceUpdate(); }
-                else toast("warn","Key kosong atau sudah ada.");
-              }} className="btn-primary rounded-lg px-3 py-2 text-sm">+ Add</button>
-            </div>}
-          </div>;
-        })}
-        <p className="text-xs text-muted">Embedded key aktif untuk semua pengunjung GitHub Pages, tetapi key akan terlihat publik di source. Gunakan backend/proxy untuk produksi yang aman.</p>
-      </Section>
-      <Section title="🤖 Model Selection">
-        <Label label="Fast Model"><Select value={settings.fastModel} onChange={v => setSettings({...settings, fastModel:v})}>{FAST_MODELS.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</Select></Label>
-        <Label label="Thinking Model"><Select value={settings.thinkingModel} onChange={v => setSettings({...settings, thinkingModel:v})}>{THINKING_MODELS.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</Select></Label>
-        <div className="flex flex-wrap gap-2">{["Fast","Reasoning","Vision","Free"].map(b => <span key={b} className="rounded-full px-2 py-1 text-xs" style={{background:"var(--accent-soft)", color:"var(--accent)"}}>{b}</span>)}</div>
-      </Section>
-      <Section title="👤 Student Profile">
-        <Label label="Nama Siswa"><Input value={memory.studentName} onChange={v => setMemory({...memory, studentName:v})}/></Label>
-        <Label label="Kelas"><Select value={memory.grade} onChange={v => setMemory({...memory, grade:v})}><option value="">Pilih</option><option>10</option><option>11</option><option>12</option></Select></Label>
-        <Label label="Sekolah"><Input value={memory.school} onChange={v => setMemory({...memory, school:v})}/></Label>
-        <Label label="Jurusan"><Select value={settings.major} onChange={v => setSettings({...settings, major:v})}><option>IPS</option><option>IPA</option><option>Bahasa</option></Select></Label>
-        <Label label="Bahasa UI"><Select value={settings.uiLanguage} onChange={v => setSettings({...settings, uiLanguage:v})}><option>Indonesia</option><option>English</option></Select></Label>
-      </Section>
-      <Section title="🧠 Memory">
-        <Label label="Kekuatan"><Input value={memory.strongSubjects.join(", ")} onChange={v => setMemory({...memory, strongSubjects:v.split(",").map(x=>x.trim()).filter(Boolean)})}/></Label>
-        <Label label="Perlu perhatian"><Input value={memory.weakSubjects.join(", ")} onChange={v => setMemory({...memory, weakSubjects:v.split(",").map(x=>x.trim()).filter(Boolean)})}/></Label>
-        <Label label="Catatan penting"><Textarea value={memory.importantNotes.map(n=>n.note || n).join("\n")} onChange={v => setMemory({...memory, importantNotes:v.split("\n").filter(Boolean).map(note=>({note,date:new Date().toISOString()}))})}/></Label>
-        <button onClick={() => confirm("Hapus semua memori?") && setMemory({...DEFAULT_MEMORY})} className="rounded-lg px-3 py-2 text-white" style={{background:"var(--danger)"}}>Hapus Semua Memori</button>
-      </Section>
-      <Section title="🎯 Default Subject">
-        <Select value={settings.defaultSubject} onChange={v => setSettings({...settings, defaultSubject:v})}>{SUBJECTS.map(s => <option key={s}>{s}</option>)}</Select>
-      </Section>
-      <Section title="💾 Data Management">
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => exportData(toast)} className="elevated border rounded-lg px-3 py-2">Export Semua Chat (JSON)</button>
-          <label className="elevated border rounded-lg px-3 py-2 cursor-pointer">Import Chat (JSON)<input type="file" accept=".json" hidden onChange={e => importData(e.target.files[0], toast)} /></label>
+          </div>
+          <div class="floating-label">
+            <span>⌘</span> Less setup. More shipping.
+          </div>
         </div>
-        <div className="mt-3 flex gap-2"><Input value={wipeText} onChange={setWipeText} placeholder='Ketik "HAPUS"'/><button disabled={wipeText!=="HAPUS"} onClick={() => { Object.values(STORAGE).forEach(k => localStorage.removeItem(k)); location.reload(); }} className="rounded-lg px-3 text-white disabled:opacity-40" style={{background:"var(--danger)"}}>Hapus Semua Data</button></div>
-      </Section>
-      <div className="flex justify-end gap-2 mt-5"><button onClick={onClose} className="elevated border rounded-lg px-4 py-2">Tutup</button><button onClick={saveKeys} className="btn-primary rounded-lg px-4 py-2">Save</button></div>
-    </div>
-  </div>;
-}
-function Section({title, children}) { return <div className="border-t py-4" style={{borderColor:"var(--border)"}}><h3 className="font-bold mb-3">{title}</h3><div className="space-y-3">{children}</div></div>; }
-function Label({label, children}) { return <label className="block text-sm"><span className="text-secondary block mb-1">{label}</span>{children}</label>; }
-function Input({value, onChange, type="text", placeholder=""}) { return <input type={type} value={value || ""} placeholder={placeholder} onChange={e=>onChange(e.target.value)} className="w-full elevated border rounded-lg px-3 py-2 outline-none text-primary placeholder:text-muted" />; }
-function Textarea({value, onChange}) { return <textarea value={value || ""} onChange={e=>onChange(e.target.value)} rows="3" className="w-full elevated border rounded-lg px-3 py-2 outline-none text-primary" />; }
-function Select({value, onChange, children}) { return <select value={value || ""} onChange={e=>onChange(e.target.value)} className="w-full elevated border rounded-lg px-3 py-2 outline-none text-primary">{children}</select>; }
-function ProjectModal({open, onClose, onSave}) {
-  const [name,setName]=useState(""), [description,setDescription]=useState(""), [customInstructions,setCustomInstructions]=useState("");
-  if(!open) return null;
-  return <div className="fixed inset-0 z-[70] bg-black/60 grid place-items-center p-4" onMouseDown={onClose}>
-    <div className="modal-enter surface border rounded-2xl w-[520px] max-w-full p-5" onMouseDown={e=>e.stopPropagation()}>
-      <div className="flex justify-between mb-4"><h2 className="text-xl font-bold">New Project</h2><button onClick={onClose}>×</button></div>
-      <div className="space-y-3">
-        <Label label="Project Name"><Input value={name} onChange={setName}/></Label>
-        <Label label="Description"><Input value={description} onChange={setDescription}/></Label>
-        <Label label="Custom AI Instructions"><Textarea value={customInstructions} onChange={setCustomInstructions}/></Label>
-      </div>
-      <div className="flex justify-end gap-2 mt-5"><button onClick={onClose} className="elevated border rounded-lg px-4 py-2">Cancel</button><button onClick={() => { if(name.trim()){ onSave({name,description,customInstructions}); setName(""); setDescription(""); setCustomInstructions(""); } }} className="btn-primary rounded-lg px-4 py-2">Save</button></div>
-    </div>
-  </div>;
-}
-function exportData(toast) {
-  const data = {chats:load(STORAGE.chats,[]), projects:load(STORAGE.projects,[]), memory:load(STORAGE.memory,DEFAULT_MEMORY), exportedAt:new Date().toISOString()};
-  const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "vt-ai-export.json"; a.click(); URL.revokeObjectURL(a.href);
-  toast("success","Chat berhasil diekspor!");
-}
-async function importData(file, toast) {
-  if(!file) return;
-  try {
-    const data = JSON.parse(await readFileAsText(file));
-    if(data.chats) save(STORAGE.chats, data.chats);
-    if(data.projects) save(STORAGE.projects, data.projects);
-    if(data.memory) save(STORAGE.memory, data.memory);
-    toast("success","Data berhasil diimpor. Muat ulang halaman.");
-  } catch { toast("error","JSON import tidak valid."); }
-}
-
-/* ============================= API + Prompting ============================= */
-function buildSystemPrompt({personality, memory, subject, project, compress=false}) {
-  const notes = (memory.importantNotes || []).map(n => n.note || n).slice(-3).join("; ");
-  const memCtx = memory.studentName
-    ? `[SISWA] ${memory.studentName}, Kelas ${memory.grade||"?"}, Kuat: ${(memory.strongSubjects||[]).slice(0,3).join(",") || "-"}, Perlu: ${(memory.weakSubjects||[]).slice(0,3).join(",") || "-"}, Catatan: ${notes || "-"}, Sesi: ${memory.sessionCount||1}.`
-    : `[SESI] Ke-${memory.sessionCount||1}.`;
-  const subjectCtx = `[MAPEL: ${subject}] Jawab langsung, padat, hemat token. Tabel/bullet hanya jika esensial.`;
-  const projCtx = project?.customInstructions ? `[PROJECT]\n${project.customInstructions.slice(0,400)}` : "";
-  const persCtx = personality === "friendly" ? FRIENDLY : PRO;
-  if (compress) {
-    return [
-      `Kamu VT AI, guru SMA Indonesia master-level. Kurikulum Merdeka/K13. AKURASI MUTLAK: Matematika tampilkan SEMUA langkah, kode harus runnable 100%.`,
-      persCtx.slice(0, 180),
-      memCtx, subjectCtx, projCtx
-    ].filter(Boolean).join("\n\n");
-  }
-  return [BASE_PROMPT, persCtx, memCtx, subjectCtx, projCtx].filter(Boolean).join("\n\n");
-}
-function compactContent(content, limit=4200) {
-  const text = String(content || "").replace(/\n{3,}/g, "\n\n").trim();
-  if (text.length <= limit) return text;
-  return text.slice(0, limit) + `\n\n[Konten dipotong otomatis oleh VT AI untuk efisiensi token: ${text.length - limit} karakter tidak dikirim.]`;
-}
-function toApiMessages(chat, memory, subject, project, personality, settings) {
-  const modelId = currentModelId(settings);
-  const msgCount = (chat.messages || []).filter(m => m.role === "user").length;
-  const useCompressed = msgCount >= 3 && chat.subject === subject;
-  const systemPrompt = buildSystemPrompt({personality, memory, subject, project, compress: useCompressed});
-  const { messages: slicedMsgs } = smartSliceMessages((chat.messages || []), modelId);
-  const apiMessages = [{role:"system", content:systemPrompt}];
-  slicedMsgs.forEach(m => {
-    if (m.role === "assistant") {
-      apiMessages.push({role:"assistant", content:compactContent(m.content, 1800)});
-    } else {
-      const text = compactContent((m.content || "") + filesToPrompt(m.files || []), 7000);
-      const images = (m.files || []).filter(f => f.type === "image");
-      if (images.length && isVisionModel(modelId)) {
-        apiMessages.push({role:"user", content:[{type:"text", text}, ...images.map(f => ({type:"image_url", image_url:{url:f.content}}))]});
-      } else apiMessages.push({role:"user", content:text});
-    }
-  });
-  return apiMessages;
-}
-/* KEY POOL MODULE */
-async function streamCompletion({settings, messages, onDelta, signal}) {
-  const type = settings.modelType;
-  const pool = type === "fast" ? groqPool : orPool;
-  const url = type === "fast" ? GROQ_URL : OPENROUTER_URL;
-  const maxAttempts = Math.max(pool.count, 1);
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const entry = pool.next();
-    if (!entry) throw new Error("NO_KEYS");
-    try {
-      const res = await fetch(url, {
-        method:"POST",
-        headers:apiHeaders(type, entry.key),
-        signal,
-        body:JSON.stringify({model:currentModelId(settings), messages, stream:true, temperature:.4})
-      });
-      if (res.status === 429) { pool.markRateLimit(entry.key); continue; }
-      if (res.status === 401 || res.status === 403) { pool.markDead(entry.key); continue; }
-      if (!res.ok || !res.body) { pool.markRateLimit(entry.key); continue; }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let usage = null, buffer = "";
-      while (true) {
-        const {done, value} = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, {stream:true});
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-        for (const raw of lines) {
-          const line = raw.trim();
-          if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6);
-          if (data === "[DONE]") { pool.markSuccess(entry.key); return usage; }
-          try {
-            const json = JSON.parse(data);
-            const delta = json.choices?.[0]?.delta?.content || "";
-            if (delta) onDelta(delta);
-            if (json.usage) usage = {prompt:json.usage.prompt_tokens, completion:json.usage.completion_tokens, total:json.usage.total_tokens};
-          } catch {}
-        }
-      }
-      pool.markSuccess(entry.key);
-      return usage;
-    } catch (err) {
-      if (err.name === "AbortError") throw err;
-      pool.markRateLimit(entry.key);
-      if (attempt === maxAttempts - 1) throw err;
-    }
-  }
-  throw new Error("ALL_KEYS_EXHAUSTED");
-}
-async function extractMemory({chat, setMemory}) {
-  const entry = groqPool.next();
-  if (!entry) return;
-  const groqKey = entry.key;
-  const model = "llama-3.1-8b-instant";
-  const headers = {"Authorization":`Bearer ${groqKey}`, "Content-Type":"application/json"};
-  const lastMsgs = (chat.messages || []).slice(-4)
-    .map(m => `${m.role[0].toUpperCase()}: ${String(m.content || "").slice(0,300)}`)
-    .join("\n");
-  const prompt = `Extract student info JSON from this conversation.
-Return ONLY valid JSON, no markdown:
-{"studentName":null,"detectedGrade":null,"strongHint":null,"weakHint":null,"importantNote":null}
-Replace null with found values only.
-Conversation:
-${lastMsgs}`;
-  try {
-    const res = await fetch(GROQ_URL, {method:"POST", headers, body:JSON.stringify({model, messages:[{role:"user", content:prompt}], temperature:0, max_tokens:100})});
-    if (res.status === 429) { groqPool.markRateLimit(groqKey); return; }
-    if (res.status === 401 || res.status === 403) { groqPool.markDead(groqKey); return; }
-    if (!res.ok) return;
-    groqPool.markSuccess(groqKey);
-    const txt = (await res.json()).choices?.[0]?.message?.content || "null";
-    const data = JSON.parse(txt.replace(/```[a-z]*|```/g,"").trim());
-    if (!data) return;
-    setMemory(prev => {
-      const next = {...prev};
-      if (data.studentName && !next.studentName) next.studentName = data.studentName;
-      if (data.detectedGrade && !next.grade) next.grade = String(data.detectedGrade);
-      if (data.strongHint && !next.strongSubjects?.includes(data.strongHint)) next.strongSubjects = [...(next.strongSubjects||[]), data.strongHint];
-      if (data.weakHint && !next.weakSubjects?.includes(data.weakHint)) next.weakSubjects = [...(next.weakSubjects||[]), data.weakHint];
-      if (data.importantNote) next.importantNotes = [...(next.importantNotes||[]), {note:data.importantNote, date:new Date().toISOString()}].slice(-20);
-      next.lastSeen = new Date().toISOString();
-      return next;
-    });
-  } catch { groqPool.markRateLimit(groqKey); }
-}
-
-/* MODULE 3: INTERACTIVE POLISH */
-function ShortcutsOverlay({open, onClose}) {
-  if (!open) return null;
-  const shortcuts = [
-    ["Ctrl+N", "New Chat"],
-    ["Ctrl+K", "Search"],
-    ["Ctrl+,", "Settings"],
-    ["Enter", "Kirim pesan"],
-    ["Shift+Enter", "Baris baru"],
-    ["Esc", "Tutup modal"],
-  ];
-  return <div className="fixed inset-0 z-[70] bg-black/60 grid place-items-center p-4" onMouseDown={onClose}>
-    <div className="modal-enter surface border rounded-2xl w-[380px] max-w-full p-5" onMouseDown={e => e.stopPropagation()}>
-      <div className="flex justify-between mb-4"><h2 className="font-bold">⌨️ Keyboard Shortcuts</h2><button onClick={onClose}>×</button></div>
-      <div className="space-y-2">
-        {shortcuts.map(([key, desc]) => <div key={key} className="flex justify-between">
-          <span className="text-secondary">{desc}</span>
-          <kbd className="elevated border rounded-lg px-2 py-0.5 text-xs mono">{key}</kbd>
-        </div>)}
-      </div>
-    </div>
-  </div>;
-}
-
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {error:null};
-  }
-  static getDerivedStateFromError(error) {
-    return {error};
-  }
-  componentDidCatch(error, info) {
-    console.error("VT AI render error:", error, info);
-  }
-  render() {
-    if (!this.state.error) return this.props.children;
-    return <div className="h-full grid place-items-center p-6">
-      <div className="surface border rounded-2xl p-6 max-w-lg text-center">
-        <div className="mx-auto w-14 h-14 rounded-2xl btn-primary grid place-items-center font-black mb-4">VT</div>
-        <h1 className="text-xl font-bold mb-2">VT AI gagal memuat data lokal</h1>
-        <p className="text-secondary text-sm mb-4">Kemungkinan ada data chat/settings lama yang rusak di localStorage. Coba bersihkan data lokal aplikasi.</p>
-        <pre className="text-left text-xs elevated border rounded-xl p-3 overflow-auto mb-4">{String(this.state.error?.message || this.state.error)}</pre>
-        <button className="btn-primary rounded-xl px-4 py-2 font-semibold" onClick={() => {
-          [STORAGE.chats, STORAGE.projects, STORAGE.memory, STORAGE.settings].forEach(k => localStorage.removeItem(k));
-          location.reload();
-        }}>Reset Data Lokal VT AI</button>
-      </div>
-    </div>;
-  }
-}
-
-/* ============================= App ============================= */
-function App() {
-  const [theme,setTheme] = useState(localStorage.getItem(STORAGE.theme) || "dark");
-  const [chats,setChats] = useState(normalizeChats(load(STORAGE.chats, [])));
-  const [projects,setProjects] = useState(normalizeProjects(load(STORAGE.projects, [])));
-  const [memory,setMemory] = useState(normalizeMemory(load(STORAGE.memory, DEFAULT_MEMORY)));
-  const [settings,setSettings] = useState(normalizeSettings(load(STORAGE.settings, DEFAULT_SETTINGS)));
-  const [personality,setPersonality] = useState(localStorage.getItem(STORAGE.personality) || "friendly");
-  const [activeId,setActiveId] = useState(chats[0]?.id || null);
-  const [input,setInput] = useState("");
-  const [files,setFiles] = useState([]);
-  const [subject,setSubject] = useState(settings.defaultSubject || "Matematika");
-  const [loading,setLoading] = useState(false);
-  const [settingsOpen,setSettingsOpen] = useState(false);
-  const [projectOpen,setProjectOpen] = useState(false);
-  const [sideOpen,setSideOpen] = useState(false);
-  const [search,setSearchRaw] = useState("");
-  const [debouncedSearch,setDebouncedSearch] = useState("");
-  const [toasts,setToasts] = useState([]);
-  const [newMsgButton,setNewMsgButton] = useState(false);
-  const [isDragging,setIsDragging] = useState(false);
-  const [shortcutsOpen,setShortcutsOpen] = useState(false);
-  const [keyPoolTick,setKeyPoolTick] = useState(0);
-  const messagesRef = useRef(null);
-  const abortRef = useRef(null);
-  const activeChat = chats.find(c => c.id === activeId) || null;
-  const activeMessages = Array.isArray(activeChat?.messages) ? activeChat.messages : [];
-  const hasKey = (groqPool.count + orPool.count) > 0;
-  const toast = (kind, message, action) => {
-    const id = uid(); setToasts(t => [...t, {id, kind, message, action}]); setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 5000);
-  };
-  const setSearch = useMemo(() => debounce(v => setDebouncedSearch(v), 300), []);
-  useEffect(() => { setSearch(debouncedSearch); }, []);
-  const onSearchChange = v => { setSearchRaw(v); setSearch(v); };
-  useEffect(() => { document.documentElement.classList.toggle("light", theme === "light"); localStorage.setItem(STORAGE.theme, theme); }, [theme]);
-  useEffect(() => save(STORAGE.chats, chats), [chats]);
-  useEffect(() => save(STORAGE.projects, projects), [projects]);
-  useEffect(() => save(STORAGE.memory, memory), [memory]);
-  useEffect(() => save(STORAGE.settings, settings), [settings]);
-  useEffect(() => localStorage.setItem(STORAGE.personality, personality), [personality]);
-  useEffect(() => { setMemory(m => ({...m, sessionCount:(m.sessionCount || 0) + 1, lastSeen:new Date().toISOString()})); }, []);
-  useEffect(() => {
-    const el = messagesRef.current; if (!el) return;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 180;
-    if (nearBottom) { el.scrollTop = el.scrollHeight; setNewMsgButton(false); } else setNewMsgButton(true);
-  }, [activeMessages.length, activeMessages[activeMessages.length - 1]?.content]);
-  useEffect(() => {
-    const onKey = e => {
-      if (e.ctrlKey && e.key.toLowerCase() === "k") { e.preventDefault(); document.getElementById("sidebar-search")?.focus(); }
-      if (e.ctrlKey && e.key.toLowerCase() === "n") { e.preventDefault(); newChat(); }
-      if (e.ctrlKey && e.key === ",") { e.preventDefault(); setSettingsOpen(true); }
-      if (e.shiftKey && e.key === "?") { e.preventDefault(); setShortcutsOpen(true); }
-      if (e.key === "Escape") { setSettingsOpen(false); setProjectOpen(false); setShortcutsOpen(false); }
-    };
-    window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
-  }, [activeId, chats, subject]);
-  const searchResults = useMemo(() => {
-    const q = debouncedSearch.trim(); if(!q) return [];
-    const out = [];
-    chats.forEach(chat => {
-      if (chat.title.toLowerCase().includes(q.toLowerCase())) out.push({chat, messageId:null, context:chat.title});
-      (chat.messages || []).forEach(m => {
-        const text = `${m.content} ${(m.files||[]).map(f=>f.name+" "+(f.type==="text"?f.content:"")).join(" ")}`;
-        if (text.toLowerCase().includes(q.toLowerCase())) out.push({chat, messageId:m.id, context:excerpt(text,q)});
-      });
-    });
-    return out.slice(0,40);
-  }, [debouncedSearch, chats]);
-  function newChat(startSubject = subject) {
-    const now = new Date().toISOString();
-    const chat = {id:uid(), title:"Chat baru", createdAt:now, updatedAt:now, projectId:null, subject:startSubject, personality, model:currentModelId(settings), modelType:settings.modelType, messages:[]};
-    setChats(c => [chat, ...c]); setActiveId(chat.id); setSubject(startSubject);
-  }
-  function deleteChat(id) {
-    if (!confirm("Hapus chat ini?")) return;
-    const el = document.getElementById(`chat-row-${id}`);
-    const remove = () => {
-      setChats(c => c.filter(x => x.id !== id));
-      if (activeId === id) setActiveId(chats.find(c => c.id !== id)?.id || null);
-    };
-    if (el) {
-      el.classList.add("chat-row-exit");
-      setTimeout(remove, 280);
-    } else remove();
-  }
-  async function onFiles(fileList) {
-    if (!fileList.length) return;
-    const picked = fileList.slice(0, 5 - files.length);
-    try {
-      const processed = [];
-      for (const f of picked) processed.push(await processFile(f));
-      const next = [...files, ...processed].slice(0,5);
-      setFiles(next);
-      if (next.some(f => f.type === "image") && !isVisionModel(currentModelId(settings))) {
-        toast("warn","Gambar terdeteksi. Gunakan VT.Vision untuk melihat gambar.", {label:"Switch to Vision Model", onClick:() => setSettings(s => ({...s, modelType:"fast", fastModel:"meta-llama/llama-4-scout-17b-16e-instruct"}))});
-      }
-    } catch(e) { toast("error", e.message || "Gagal membaca file."); }
-  }
-  async function send(regenerateFromId = null) {
-    if (loading) return;
-    let chat = activeChat;
-    let text = input.trim();
-    let sendingFiles = files;
-    if (!regenerateFromId && !text && !sendingFiles.length) return;
-    const activePool = settings.modelType === "fast" ? groqPool : orPool;
-    if (activePool.count === 0) { toast("warn","Tidak ada API key tersedia. Isi embedded key pool di source atau tambahkan key di Settings."); setSettingsOpen(true); return; }
-    if (!chat) {
-      const now = new Date().toISOString();
-      chat = {id:uid(), title:trimTitle(text || "Analisis file"), createdAt:now, updatedAt:now, projectId:null, subject, personality, model:currentModelId(settings), modelType:settings.modelType, messages:[]};
-      setChats(c => [chat, ...c]); setActiveId(chat.id);
-    }
-    const now = new Date().toISOString();
-    let baseMessages = chat.messages || [];
-    if (regenerateFromId) {
-      const idx = baseMessages.findIndex(m => m.id === regenerateFromId);
-      baseMessages = baseMessages.slice(0, idx);
-    } else {
-      const userMsg = {id:uid(), role:"user", content:text, timestamp:now, files:sendingFiles, thinkingContent:null, tokenUsage:null};
-      baseMessages = [...baseMessages, userMsg];
-    }
-    const assistantId = uid();
-    const assistantMsg = {id:assistantId, role:"assistant", content:"", timestamp:new Date().toISOString(), files:[], thinkingContent:null, tokenUsage:null};
-    const updatedChat = {...chat, title:chat.title === "Chat baru" ? trimTitle(text || sendingFiles[0]?.name) : chat.title, updatedAt:now, subject, personality, model:currentModelId(settings), modelType:settings.modelType, messages:[...baseMessages, assistantMsg]};
-    setChats(cs => [updatedChat, ...cs.filter(c => c.id !== updatedChat.id)]);
-    if (!regenerateFromId && baseMessages.filter(m => m.role === "user").length === 20) {
-      toast("warn", "💡 Chat sudah panjang. Mulai chat baru agar AI lebih fokus dan hemat token.", {label:"New Chat", onClick:() => newChat(subject)});
-    }
-    setInput(""); setFiles([]); setLoading(true);
-    let full = "";
-    try {
-      const project = projects.find(p => p.id === updatedChat.projectId);
-      const messages = toApiMessages(updatedChat, memory, subject, project, personality, settings);
-      const controller = new AbortController();
-      abortRef.current = controller;
-      const usage = await streamCompletion({settings, messages, signal:controller.signal, onDelta:(delta) => {
-        full += delta;
-        setChats(cs => cs.map(c => c.id === updatedChat.id ? {...c, messages:c.messages.map(m => m.id === assistantId ? {...m, content:full} : m), updatedAt:new Date().toISOString()} : c));
-      }});
-      setChats(cs => cs.map(c => c.id === updatedChat.id ? {...c, messages:c.messages.map(m => m.id === assistantId ? {...m, content:full || "Maaf, respons kosong.", tokenUsage:usage} : m)} : c));
-      const finalChat = {...updatedChat, messages:[...baseMessages, {...assistantMsg, content:full || "Maaf, respons kosong.", tokenUsage:usage}]};
-      extractMemory({chat:finalChat, setMemory});
-    } catch(e) {
-      if (e.name === "AbortError") {
-        setChats(cs => cs.map(c => c.id === updatedChat.id ? {...c, messages:c.messages.map(m => m.id === assistantId ? {...m, content: full ? full + "\n\n*[Respons dihentikan]*" : "*[Respons dihentikan]*"} : m)} : c));
-        setLoading(false);
-        abortRef.current = null;
-        return;
-      }
-      const ERR_MAP = {
-        "NO_KEYS": "Tidak ada API key tersedia. Isi embedded key pool di source atau tambahkan key di Settings.",
-        "ALL_KEYS_EXHAUSTED": "Semua key gagal atau sedang cooldown. Cek status key di Settings.",
-        "RATE_LIMIT": "Semua key sedang rate-limited. Tunggu sekitar 60 detik.",
-      };
-      const detail = e.message && !["API_ERROR","Failed to fetch"].includes(e.message) ? ` Detail: ${e.message}` : "";
-      const msg = ERR_MAP[e.message] || `Gagal menghubungi AI. Cek API key, model, atau koneksi internet.${detail}`;
-      toast(e.message === "NO_KEYS" ? "warn" : "error", msg);
-      setChats(cs => cs.map(c => c.id === updatedChat.id ? {...c, messages:c.messages.map(m => m.id === assistantId ? {...m, content:`**Error:** ${msg}`} : m)} : c));
-    } finally { setLoading(false); abortRef.current = null; }
-  }
-  function copyMsg(msg) { navigator.clipboard.writeText(splitThinking(msg.content).answer || msg.content); toast("success","Disalin ke clipboard."); }
-  function addProject(p) {
-    setProjects(ps => [...ps, {id:uid(), ...p, createdAt:new Date().toISOString(), chats:[]}]);
-    setProjectOpen(false);
-  }
-  function deleteProject(id) {
-    const n = chats.filter(c => c.projectId === id).length;
-    if (!confirm(`Hapus project beserta ${n} chat di dalamnya?`)) return;
-    setProjects(ps => ps.filter(p => p.id !== id));
-    setChats(cs => cs.filter(c => c.projectId !== id));
-  }
-  return <div className="mobile-shell h-full flex overflow-hidden">
-    <Sidebar open={sideOpen} setOpen={setSideOpen} chats={chats} projects={projects} activeId={activeId} onNew={newChat} onOpen={id=>{setActiveId(id); setSideOpen(false);}} onDeleteChat={deleteChat} onSettings={()=>setSettingsOpen(true)} onNewProject={()=>setProjectOpen(true)} onDeleteProject={deleteProject} theme={theme} toggleTheme={()=>setTheme(theme==="light"?"dark":"light")} search={search} setSearch={onSearchChange} results={searchResults} onResult={r => {setActiveId(r.chat.id); setTimeout(()=>r.messageId && document.getElementById(`msg-${r.messageId}`)?.scrollIntoView({behavior:"smooth", block:"center"}),50);}} />
-    {sideOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={()=>setSideOpen(false)} />}
-    <main className="main flex-1 flex flex-col min-w-0 overflow-hidden">
-      <div className="mobile-topbar">
-        <button className="mobile-round-btn" onClick={()=>setSideOpen(true)} aria-label="Buka menu"><Icon name="menu" /></button>
-        <button className="mobile-round-btn logo-btn" onClick={()=>setSettingsOpen(true)} aria-label="Buka settings"><span className="brand-logo w-full h-full rounded-full"><img src="vt-ai-logo.png" alt="VT AI" /></span></button>
-      </div>
-      <div className="mobile-promo">
-        <span>Virtual Teacher.AI</span>
-        <button onClick={()=>setSettingsOpen(true)}>Settings</button>
-      </div>
-      <header className="app-header h-14 surface border-b flex items-center justify-between px-4" style={{borderColor:"var(--border)"}}>
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <button className="w-9 h-9 rounded-lg hoverable md:hidden" onClick={()=>setSideOpen(true)}><Icon name="menu" /></button>
-          <button className="w-9 h-9 rounded-lg hoverable hidden md:block" onClick={()=>setSideOpen(true)}><Icon name="menu" /></button>
-          <div className="brand-logo sidebar-brand-logo w-8 h-8 rounded-lg hidden sm:inline-grid"><img src="vt-ai-logo.png" alt="VT AI" /></div>
-          <div className="font-semibold truncate">{activeChat?.title || "VT AI"}</div>
+      </section>
+      <div class="ticker">
+        <div class="wrap">
+          BUILT FOR BUILDERS <span>WHATSAPP BOTS</span><b>✦</b
+          ><span>N8N AUTOMATION</span><b>✦</b><span>AI AGENTS</span><b>✦</b
+          ><span>WINDOWS WORKSPACE</span>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button onClick={()=>setShortcutsOpen(true)} className="elevated border rounded-full px-3 py-1.5 text-sm hoverable" title="Keyboard shortcuts">?</button>
-          <button onClick={()=>setPersonality(personality==="friendly"?"pro":"friendly")} className="elevated border rounded-full px-3 py-1.5 text-sm hoverable"><span className="md:hidden">{personality==="friendly"?"🌟":"⚡"}</span><span className="hidden md:inline">{personality==="friendly"?"🌟 Friendly":"⚡ Pro"}</span></button>
-          <KeyStatusPill />
-          <ModelDropdown settings={settings} setSettings={setSettings} direction="down" className="hidden md:block w-[260px] lg:w-[330px]" />
-        </div>
-      </header>
-      <div ref={messagesRef} onScroll={e => setNewMsgButton(e.currentTarget.scrollHeight - e.currentTarget.scrollTop - e.currentTarget.clientHeight > 260)} onDragEnter={() => setIsDragging(true)} onDragLeave={e => { if(!e.currentTarget.contains(e.relatedTarget)) setIsDragging(false); }} onDrop={e => {e.preventDefault(); setIsDragging(false); onFiles([...e.dataTransfer.files]);}} onDragOver={e => e.preventDefault()} className="messages-pane flex-1 overflow-y-auto scrollbar relative">
-        <div className={`drag-overlay ${isDragging ? "active" : ""}`} onDrop={e => { e.preventDefault(); setIsDragging(false); onFiles([...e.dataTransfer.files]); }} onDragOver={e => e.preventDefault()}>📎 Lepaskan file di sini</div>
-        {!activeChat || activeChat.messages.length === 0 ? <Welcome hasKey={hasKey} onSubject={(s)=>{setSubject(s); newChat(s);}} /> :
-          <div className="messages-list max-w-4xl mx-auto p-4 md:p-8 space-y-6 pb-16">
-            {activeChat.messages.map(m => <Message key={m.id} msg={m} onCopy={copyMsg} onRegenerate={(msg)=>send(msg.id)} searchTerm={debouncedSearch} />)}
-            {loading && <Typing thinking={settings.modelType === "thinking"} />}
-          </div>}
-        {newMsgButton && <button onClick={()=>{messagesRef.current.scrollTop=messagesRef.current.scrollHeight; setNewMsgButton(false);}} className="absolute bottom-4 left-1/2 btn-primary rounded-full px-4 py-2 text-sm shadow-xl scroll-bounce">↓ Pesan baru</button>}
       </div>
-      <div className="disclaimer px-4 pb-1 text-center text-[11px] text-muted">⚠️ VT AI menggunakan data training AI. Verifikasi materi penting dengan buku paket resmi (BSE Kemdikbud). Untuk Matematika, selalu cek kembali perhitungan.</div>
-      <InputBar value={input} setValue={setInput} onSend={()=>send()} loading={loading} files={files} setFiles={setFiles} onFiles={onFiles} subject={subject} setSubject={setSubject} settings={settings} setSettings={setSettings} activeChat={activeChat} abortRef={abortRef} />
+      <section id="fitur" class="wrap section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">// YOUR LAPTOP CAN REST NOW</p>
+            <h2>Kerja tetap jalan.<br />Tanpa laptop terus menyala.</h2>
+          </div>
+          <p>
+            Pindahkan proses panjang ke workspace Windows yang bisa kamu akses
+            kapan saja. Dari instalasi sampai restart, kontrol ada di
+            genggamanmu.
+          </p>
+        </div>
+        <div class="feature-grid">
+          <article>
+            <span class="feature-icon">▧</span>
+            <h3>Windows milikmu sendiri</h3>
+            <p>
+              OS terisolasi per pelanggan. Instal tools, atur environment, dan
+              jalankan workflow sesuai kebutuhan proyekmu.
+            </p>
+          </article>
+          <article>
+            <span class="feature-icon">↗</span>
+            <h3>Deploy tanpa ritual panjang</h3>
+            <p>
+              Stack pengembangan disiapkan dalam template Windows. Fokus ke bot
+              dan agent, bukan mengulang setup dari nol.
+            </p>
+          </article>
+          <article>
+            <span class="feature-icon">⌁</span>
+            <h3>Control panel di Telegram</h3>
+            <p>
+              Pesan paket, lihat kredensial, start, stop, restart, serta unduh
+              shortcut RDP langsung di chat privat.
+            </p>
+          </article>
+        </div>
+        <div class="cost-panel">
+          <div>
+            <p class="eyebrow">// KEEP YOUR EXPERIMENTS LEAN</p>
+            <h3>Mulai kecil.<br />Naikkan ambisimu.</h3>
+            <p>
+              Bandingkan dengan alokasi anggaranmu sendiri. Tidak harus
+              menghabiskan Rp100 ribu untuk memulai eksperimen bulanan.
+            </p>
+          </div>
+          <div class="cost-chart">
+            <div>
+              <span>Simulasi anggaran bulanan</span><strong>Rp100.000</strong>
+            </div>
+            <div class="bar baseline"></div>
+            <div>
+              <span>Dric Nano</span><strong class="cyan">Rp18.000</strong>
+            </div>
+            <div class="bar dric"></div>
+            <small
+              >Ilustrasi anggaran, bukan kutipan harga provider tertentu. Pilih
+              paket sesuai kebutuhan aplikasi dan resource yang dikonfirmasi
+              admin.</small
+            >
+          </div>
+        </div>
+      </section>
+      <section id="stack" class="stack-section">
+        <div class="wrap section">
+          <p class="eyebrow">// FAMILIAR TOOLS. READY TO BUILD.</p>
+          <h2>
+            Stack yang kamu kenal.<br /><span class="muted"
+              >Di workspace yang siap kerja.</span
+            >
+          </h2>
+          <div class="stack-grid">
+            <div>
+              <b class="green">JS</b><span>Node.js</span
+              ><small>Bot &amp; APIs</small>
+            </div>
+            <div>
+              <b class="yellow">Py</b><span>Python</span
+              ><small>Agents &amp; scripts</small>
+            </div>
+            <div>
+              <b class="orange">⑂</b><span>Git</span
+              ><small>Version control</small>
+            </div>
+            <div>
+              <b class="cyan">∞</b><span>PM2</span
+              ><small>Process manager</small>
+            </div>
+            <div>
+              <b class="yellow">◉</b><span>Chrome</span
+              ><small>Browser workflows</small>
+            </div>
+            <div>
+              <b class="blue">⌘</b><span>VS Code</span
+              ><small>Your editor</small>
+            </div>
+            <div>
+              <b class="pink">⤳</b><span>n8n</span><small>Automation</small>
+            </div>
+            <div>
+              <b class="cyan">&gt;_</b><span>AI Agent CLI</span
+              ><small>Your own API keys</small>
+            </div>
+          </div>
+          <p class="note">
+            Ketersediaan versi/tools mengikuti template node. Integrasi AI
+            menggunakan API key dan akun milikmu. Periksa detail paket di bot
+            sebelum membayar.
+          </p>
+        </div>
+      </section>
+      <section id="harga" class="wrap section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">// ONE SMALL STEP TO ALWAYS-ON</p>
+            <h2>Paket ringan.<br />Ide tetap ambisius.</h2>
+          </div>
+          <p>
+            Mulai dari tiga hari untuk menguji alur kerja. Paket bulanan
+            tersedia saat kamu siap membangun lebih jauh.
+          </p>
+        </div>
+        <div class="pricing-grid">
+          <article class="price-card">
+            <p class="plan-name">01 / DRIC TRIAL</p>
+            <h3>Rp5<span>.000</span></h3>
+            <p class="period">sekali bayar / 3 hari</p>
+            <p class="plan-copy">Kenalan dulu dengan workspace barumu.</p>
+            <ul>
+              <li>Windows terisolasi</li>
+              <li>9 port aplikasi TCP/UDP</li>
+              <li>Control panel Telegram</li>
+              <li>Shortcut .rdp otomatis</li>
+            </ul>
+            <a
+              class="button secondary"
+              href="https://t.me/DriccloudBot?start=order_dric-trial"
+              >Mulai Trial <span>↗</span></a
+            >
+          </article>
+          <article class="price-card">
+            <p class="plan-name">02 / DRIC NANO</p>
+            <h3>Rp18<span>.000</span></h3>
+            <p class="period">per bulan</p>
+            <p class="plan-copy">Langkah awal untuk eksperimen rutin.</p>
+            <ul>
+              <li>Windows terisolasi</li>
+              <li>9 port aplikasi TCP/UDP</li>
+              <li>Control panel Telegram</li>
+              <li>Pengingat sebelum kedaluwarsa</li>
+            </ul>
+            <a
+              class="button secondary"
+              href="https://t.me/DriccloudBot?start=order_dric-nano"
+              >Pilih Nano <span>↗</span></a
+            >
+          </article>
+          <article class="price-card recommended">
+            <div class="ribbon">BUILD YOUR NEXT AGENT</div>
+            <p class="plan-name">03 / DRIC AGENTIC</p>
+            <h3>Rp35<span>.000</span></h3>
+            <p class="period">per bulan</p>
+            <p class="plan-copy">Rumah untuk ide automasi berikutnya.</p>
+            <ul>
+              <li>Windows terisolasi</li>
+              <li>9 port aplikasi TCP/UDP</li>
+              <li>Control panel Telegram</li>
+              <li>Perpanjangan tanpa reinstall</li>
+            </ul>
+            <a
+              class="button"
+              href="https://t.me/DriccloudBot?start=order_dric-agentic"
+              >Pilih Agentic <span>↗</span></a
+            >
+          </article>
+          <article class="price-card">
+            <p class="plan-name">04 / DRIC PRO AI</p>
+            <h3>Rp65<span>.000</span></h3>
+            <p class="period">per bulan</p>
+            <p class="plan-copy">Untuk rencana proyek yang lebih jauh.</p>
+            <ul>
+              <li>Windows terisolasi</li>
+              <li>9 port aplikasi TCP/UDP</li>
+              <li>Control panel Telegram</li>
+              <li>Akses tools dengan API key sendiri</li>
+            </ul>
+            <a
+              class="button secondary"
+              href="https://t.me/DriccloudBot?start=order_dric-pro-ai"
+              >Pilih Pro AI <span>↗</span></a
+            >
+          </article>
+        </div>
+        <p class="pricing-note">
+          vCPU, RAM, dan SSD dikonfirmasi di bot sebelum pemesanan produksi
+          dibuka. Total QRIS ditambah kode unik 3 digit yang ditampilkan pada
+          invoice. Tidak ada aktivasi sebelum pembayaran diverifikasi.
+        </p>
+      </section>
+      <section id="faq" class="wrap section faq-section">
+        <div>
+          <p class="eyebrow">// BEFORE YOU SHIP</p>
+          <h2>Pertanyaan yang<br />sering mampir.</h2>
+          <p class="muted">
+            Masih ada yang mengganjal? Buka bot dan pilih Hubungi Admin.
+          </p>
+        </div>
+        <div class="faqs">
+          <details open>
+            <summary>Bagaimana cara membeli RDP?</summary>
+            <p>
+              Pilih paket di halaman ini untuk membuka @DriccloudBot. Bot
+              menampilkan detail paket dan invoice QRIS dengan nominal unik.
+              Setelah admin memverifikasi dana masuk, engine menyiapkan instance
+              dan mengirim notifikasi.
+            </p>
+          </details>
+          <details>
+            <summary>Bisa konek dari Windows dan Android?</summary>
+            <p>
+              Bisa. Windows: buka Remote Desktop Connection, lalu isi host:port
+              dari panel Telegram. Android: gunakan Windows App/Remote Desktop
+              dan tambahkan PC dengan alamat yang sama. Shortcut .rdp juga bisa
+              diunduh dari bot.
+            </p>
+          </details>
+          <details>
+            <summary>Apakah Telegram harus terus terbuka?</summary>
+            <p>
+              Tidak. Telegram adalah tempat mengelola server. Bot dan aplikasi
+              di dalam Windows tetap berjalan selama instance menyala dan masa
+              layanan aktif. *Ketersediaan layanan mengikuti kondisi node dan
+              pemeliharaan.
+            </p>
+          </details>
+          <details>
+            <summary>Apakah data hilang saat perpanjangan?</summary>
+            <p>
+              Perpanjangan pada instance yang sama menambah masa aktif tanpa
+              menginstal ulang Windows. Reinstall adalah tindakan terpisah yang
+              menghapus data dan membutuhkan dua langkah konfirmasi.
+            </p>
+          </details>
+          <details>
+            <summary>Bolehkah menjalankan bot dan AI agent?</summary>
+            <p>
+              Boleh selama sesuai kapasitas paket, izin penggunaan aplikasi/API,
+              dan hukum yang berlaku. Mining, spam, phishing, malware, dan
+              serangan jaringan dilarang. API key, lisensi, serta akun layanan
+              pihak ketiga disediakan sendiri.
+            </p>
+          </details>
+        </div>
+      </section>
+      <section class="wrap final-cta">
+        <div class="cta-glow"></div>
+        <p class="eyebrow">// YOUR NEXT PROJECT STARTS HERE</p>
+        <h2>
+          Ide bagus butuh<br />workspace yang
+          <span class="gradient">menyala.</span>
+        </h2>
+        <p>Mulai dari Rp5.000. Lanjutkan dari mana saja.</p>
+        <a
+          class="button"
+          href="https://t.me/DriccloudBot?start=order_dric-trial"
+          >Bangun dengan Driccloud <span>↗</span></a
+        >
+      </section>
     </main>
-    <SettingsModal open={settingsOpen} onClose={()=>setSettingsOpen(false)} settings={settings} setSettings={setSettings} memory={memory} setMemory={setMemory} toast={toast} onPoolChange={()=>setKeyPoolTick(x => x + 1)} />
-    <ProjectModal open={projectOpen} onClose={()=>setProjectOpen(false)} onSave={addProject} />
-    <ShortcutsOverlay open={shortcutsOpen} onClose={()=>setShortcutsOpen(false)} />
-    <Toasts toasts={toasts} onClose={id => setToasts(t => t.filter(x => x.id !== id))} />
-  </div>;
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<ErrorBoundary><App /></ErrorBoundary>);
-</script>
-</body>
+    <footer class="wrap">
+      <a class="brand" href="#top">dric<span>cloud.</span></a>
+      <p>Windows workspace for builders in Indonesia.</p>
+      <span class="technical">JAKARTA, ID / BUILD SOMETHING.</span>
+    </footer>
+  </body>
 </html>
